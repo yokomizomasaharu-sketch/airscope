@@ -16,7 +16,7 @@
   const STATUS_TEXT = { talking: '通話中', sync: '同期', judging: '判定中', ended: '監視終了', idle: '待機' };
   const BADGE_CLASS = { talking: 'talking', sync: 'sync', judging: 'judging', ended: 'ended', idle: 'idle' };
   const CODECS = { 'STD-T79': 'AMBE+ 4000', 'DMR': 'AMBE+2', 'NXDN': 'AMBE+2 3200', 'アナログFM': 'アナログ' };
-  const PREF_KEY = 'airscope.prefs.v1';
+  const PREF_KEY = 'airscope.prefs.v2';
 
   /* ── 局データ ─────────────────────────────────────────── */
   const SEED = [
@@ -249,7 +249,7 @@
     autoFollow: true,
     rx: true,
     muted: false,
-    volume: 62,
+    volume: 35,
     recManual: false,
     recSeconds: 14,
     stdMode: 'auto',
@@ -1132,30 +1132,33 @@
         master.gain.value = this.gainValue();
         master.connect(ac.destination);
 
-        const len = Math.floor(ac.sampleRate * 2);
-        const buf = ac.createBuffer(1, len, ac.sampleRate);
-        const data = buf.getChannelData(0);
-        for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
-        const src = ac.createBufferSource();
-        src.buffer = buf; src.loop = true;
-        const bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1150; bp.Q.value = 0.85;
-        const hp = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 330;
-        const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2900;
-        const g = ac.createGain(); g.gain.value = 0;
-        src.connect(bp); bp.connect(hp); hp.connect(lp); lp.connect(g); g.connect(master);
-        src.start();
+        /* 通話音: サイン波を重ねた柔らかいトーン（ホワイトノイズは使わない） */
+        const voice = ac.createGain(); voice.gain.value = 0;
+        const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 820; lp.Q.value = 0.5;
+        [[196, 0.55], [294, 0.22], [392, 0.11]].forEach(([f, g]) => {
+          const o = ac.createOscillator(); o.type = 'sine'; o.frequency.value = f; o.detune.value = rand(-4, 4);
+          const og = ac.createGain(); og.gain.value = g;
+          o.connect(og); og.connect(lp); o.start();
+        });
+        /* ゆっくりした抑揚で話し声風に（正弦なので耳に刺さらない） */
+        const amp = ac.createGain(); amp.gain.value = 0.7;
+        const lfo = ac.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 2.2;
+        const lfoGain = ac.createGain(); lfoGain.gain.value = 0.28;
+        lfo.connect(lfoGain); lfoGain.connect(amp.gain); lfo.start();
+        lp.connect(amp); amp.connect(voice); voice.connect(master);
 
-        const osc = ac.createOscillator(); osc.type = 'sawtooth'; osc.frequency.value = 118;
-        const olp = ac.createBiquadFilter(); olp.type = 'lowpass'; olp.frequency.value = 240;
-        const og = ac.createGain(); og.gain.value = 0;
-        osc.connect(olp); olp.connect(og); og.connect(master); osc.start();
+        /* ごく小さい低域（通話中の自然さのためだけ） */
+        const rumble = ac.createOscillator(); rumble.type = 'sine'; rumble.frequency.value = 98;
+        const rlp = ac.createBiquadFilter(); rlp.type = 'lowpass'; rlp.frequency.value = 150;
+        const rg = ac.createGain(); rg.gain.value = 0;
+        rumble.connect(rlp); rlp.connect(rg); rg.connect(master); rumble.start();
 
-        this.ctx = ac; this.master = master; this.voice = g; this.rumble = og; this.ready = true;
+        this.ctx = ac; this.master = master; this.voice = voice; this.rumble = rg; this.ready = true;
       } catch (e) { /* 音声が使えない環境では無音で動作 */ }
     },
     gainValue() {
       if (!state.audio) return 0;
-      return state.muted ? 0 : (state.volume / 100) * 0.42;
+      return state.muted ? 0 : (state.volume / 100) * 0.38;
     },
     apply() {
       if (!this.ctx) return;
@@ -1169,21 +1172,21 @@
       const talking = st && st.status === 'talking';
       const above = state.level > state.squelch;
       const on = gate && talking && above;
-      const target = on ? 0.05 + Math.random() * 0.17 * (0.6 + Math.abs(Math.sin(levelPhase)) * 0.7) : 0;
-      this.voice.gain.setTargetAtTime(target, this.ctx.currentTime, 0.028);
-      this.rumble.gain.setTargetAtTime(on ? 0.018 + Math.random() * 0.008 : 0, this.ctx.currentTime, 0.05);
+      const target = on ? 0.055 + 0.018 * (0.5 + 0.5 * Math.sin(levelPhase * 0.9)) : 0;
+      this.voice.gain.setTargetAtTime(target, this.ctx.currentTime, 0.09);
+      this.rumble.gain.setTargetAtTime(on ? 0.006 : 0, this.ctx.currentTime, 0.14);
     },
     beep() {
       if (!this.ready || !this.ctx || !state.audio || state.muted) return;
       const ac = this.ctx, t0 = ac.currentTime;
-      [0, .13].forEach((off) => {
+      [0, .16].forEach((off) => {
         const o = ac.createOscillator(); const g = ac.createGain();
-        o.type = 'square'; o.frequency.value = 1180;
+        o.type = 'sine'; o.frequency.value = 784;
         g.gain.setValueAtTime(0.0001, t0 + off);
-        g.gain.linearRampToValueAtTime(0.09, t0 + off + 0.012);
-        g.gain.linearRampToValueAtTime(0.0001, t0 + off + 0.075);
+        g.gain.linearRampToValueAtTime(0.04, t0 + off + 0.03);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + off + 0.14);
         o.connect(g); g.connect(this.master);
-        o.start(t0 + off); o.stop(t0 + off + 0.1);
+        o.start(t0 + off); o.stop(t0 + off + 0.16);
       });
     }
   };

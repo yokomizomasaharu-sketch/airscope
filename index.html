@@ -16,7 +16,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="styles.css?v=12">
+<link rel="stylesheet" href="styles.css?v=13">
 </head>
 <body>
 <svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
@@ -169,7 +169,7 @@
         <div class="vol">
           <button id="muteBtn" class="vol-btn" type="button" aria-label="ミュート" aria-pressed="false"><svg class="ico" aria-hidden="true"><use id="muteIcon" href="#i-speaker"/></svg></button>
           <span class="vol-label">音量</span>
-          <input id="volSlider" class="range vol-range" type="range" min="0" max="100" step="1" value="62" aria-label="音量">
+          <input id="volSlider" class="range vol-range" type="range" min="0" max="100" step="1" value="35" aria-label="音量">
         </div>
       </div>
 
@@ -259,7 +259,7 @@
         <span id="sqVal" class="set-val">-49.0 dBFS</span>
       </div>
       <div class="set-row">
-        <div class="set-info"><div class="set-title">デモ音（Web Audio）</div><div class="set-desc">通話中の局に合わせて簡易的な音声を鳴らします</div></div>
+        <div class="set-info"><div class="set-title">デモ音（Web Audio）</div><div class="set-desc">通話中の局に合わせて柔らかいトーンを鳴らします（ノイズなし）</div></div>
         <label class="switch"><input type="checkbox" id="audioToggle" checked><span class="track" aria-hidden="true"></span></label>
       </div>
       <div class="notice">
@@ -279,6 +279,6 @@
 
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-<script src="app.js?v=12" defer></script>
+<script src="app.js?v=13" defer></script>
 </body>
 </html>
