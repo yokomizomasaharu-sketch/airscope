@@ -899,7 +899,7 @@
     if (state.source === 'sdr') {
       const c = sdr.centerHz ? sdr.centerHz / 1e6 : state.center;
       const sp = sdr.spanHz ? sdr.spanHz / 1e6 : state.span;
-      el.spanInfo.textContent = `${(c - sp / 2).toFixed(3)} - ${(c + sp / 2).toFixed(3)} MHz・中心 ${c.toFixed(4)}（実機）・${sdr.displayRate ? (sdr.displayRate / 1e6).toFixed(2) + ' MS/s' : '—'}`;
+      el.spanInfo.textContent = `${(c - sp / 2).toFixed(3)} - ${(c + sp / 2).toFixed(3)} MHz・中心 ${c.toFixed(4)}（${sdr.status === 'open' ? '実機' : '未接続'}）・${sdr.displayRate ? (sdr.displayRate / 1e6).toFixed(2) + ' MS/s' : '—'}`;
       return;
     }
     if (state.source === 'ext') {
@@ -1026,12 +1026,14 @@
     if (el.extRateVal && ext.rate) el.extRateVal.textContent = `${(ext.rate / 1000).toFixed(1)} kHz`;
 
     const raw = sdrSrc ? (sdr.signalDbfs == null ? -100 : sdr.signalDbfs) : ext.level;
-    const target = state.rx ? raw : -100;
+    const target = state.rx && ready ? raw : -100;
     state.level = state.level * 0.6 + target * 0.4;
     const pct = clamp((state.level + 80) / 60 * 100, 0, 100);
-    el.levelFill.style.width = pct.toFixed(1) + '%';
+    el.levelFill.style.width = (ready ? pct : 0).toFixed(1) + '%';
     el.levelThresh.style.left = clamp((state.squelch + 80) / 60 * 100, 0, 100) + '%';
-    el.levelText.textContent = `${sdrSrc ? '入力' : '床'} ${state.level.toFixed(1)} / 閾値 ${state.squelch.toFixed(1)} dBFS`;
+    el.levelText.textContent = ready
+      ? `${sdrSrc ? '入力' : '床'} ${state.level.toFixed(1)} / 閾値 ${state.squelch.toFixed(1)} dBFS`
+      : `未接続 / 閾値 ${state.squelch.toFixed(1)} dBFS`;
 
     const key = [ready, open, state.muted, state.volume, state.squelch, sdrSrc ? sdr.mode : '', ext.monitor, state.rx].join('|');
     if (key !== liveKey) { liveKey = key; renderMonitor(); }
