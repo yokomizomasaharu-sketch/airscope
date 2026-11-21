@@ -418,6 +418,7 @@
     st.callId = opts.id || Math.floor(rand(1000, 9999));
     if (!st.cc || st.cc === '—') st.cc = 1 + Math.floor(Math.random() * 15);
     st.callTimer = Math.round(rand(11, 27));
+    st.startedAt = Date.now();
     st.slots = makeSlots('sync');
     st.slots[2] = { t: 'call', label: '通話', body: `${opts.mine ? '送信' : '呼出'} [ID ${st.callId}]・再生中`, level: 30 };   // TS2 に通話
 
@@ -436,7 +437,7 @@
   }
 
   function endCall(st) {
-    const dur = Math.round(rand(8, 40));
+    const dur = Math.max(1, Math.round((Date.now() - (st.startedAt || Date.now())) / 1000));
     state.history.unshift({
       at: Date.now(), freq: st.freq, org: st.org, kind: '通話', dur, id: st.callId
     });
@@ -967,7 +968,9 @@
       if (e.key === 'Enter') { e.preventDefault(); commitFreq(); }
       if (e.key === 'Escape') { el.freqInput.blur(); renderMonitor(); }
     });
-    el.freqInput.addEventListener('blur', () => { el.freqInput.value = fmtHz(state.tuned); });
+    el.freqInput.addEventListener('blur', () => {
+      if (!el.freqInput.value.trim()) el.freqInput.value = fmtHz(state.tuned);
+    });
 
     function commitFreq() {
       const v = parseFloat(el.freqInput.value.replace(/[^0-9.]/g, ''));

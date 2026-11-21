@@ -511,8 +511,9 @@ table.hist .play:hover{color:#fff;border-color:#2f81f7}
   .topbar{flex-wrap:wrap;gap:7px;padding:7px 8px;overflow:visible}
   .brand{order:1}
   .topbar-right{order:2}
-  .field{order:3}
-  .btn.primary,.btn.ghost{order:4}
+  .topbar > .field{order:3}
+  .topbar > .btn.primary, .topbar > .btn.ghost{order:4}
+  .topbar-right > .btn{order:0}
   #freqInput{width:84px}
   .field-label{font-size:10px}
   .select{font-size:11px;max-width:150px}
