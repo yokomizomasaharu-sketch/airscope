@@ -432,7 +432,7 @@
           st.slots = st.slots.map((s) => s.t === 'call' ? { ...s, body: `呼出 [ID ${st.callId}]・${Math.random() < 0.82 ? '再生中' : '受信中'}` } : s);
         }
       } else if (st.status === 'sync') {
-        if (Math.random() < 0.038) startCall(st);
+        if (Math.random() < 0.028) startCall(st);
       } else if (st.status === 'judging') {
         st.sync = Math.min(99.6, st.sync + rand(1.2, 6.5));
         if (st.sync > 60) {
