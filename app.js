@@ -227,6 +227,12 @@
     el.list.innerHTML = html;
   }
 
+  function paintSelection() {
+    $$('.st', el.list).forEach((row) => {
+      row.classList.toggle('selected', row.dataset.id === state.selectedId);
+    });
+  }
+
   function updateRow(st) {
     if (state.filter !== 'all') { renderStations(); return; }
     const row = el.list.querySelector(`.st[data-id="${st.id}"]`);
@@ -501,7 +507,7 @@
     const lo = state.center - SPAN / 2, hi = state.center + SPAN / 2;
     if (st.freq < lo + 0.08 || st.freq > hi - 0.08) { state.center = st.freq; state.centerAuto = true; }
     if (st.status !== 'talking') state.recSeconds = 0;
-    renderStations();
+    paintSelection();
     renderMonitor();
     if (!opts.silent) audio.init();
   }
@@ -520,7 +526,7 @@
     state.selectedId = null;
     state.tuned = freq;
     if (freq < state.center - SPAN / 2 || freq > state.center + SPAN / 2) { state.center = freq; state.centerAuto = true; }
-    renderStations();
+    paintSelection();
     renderMonitor();
     if (opts.announce) toast(`${fmtHz(freq)} MHz：未登録周波数（ノイズのみ）`);
   }
@@ -536,7 +542,9 @@
     const st = selected();
     if (st) {
       st.fav = !st.fav;
-      renderStations();
+      updateRow(st);
+      const star = el.list.querySelector(`.st[data-id="${st.id}"] [data-act="fav"]`);
+      if (star) { star.classList.toggle('on', st.fav); star.setAttribute('aria-pressed', String(st.fav)); }
       renderMonitor();
       toast(st.fav ? `★ ${fmtHz(st.freq)} を登録しました` : `★ ${fmtHz(st.freq)} の登録を解除`);
     } else {
@@ -911,7 +919,8 @@
       if (star) {
         e.stopPropagation();
         st.fav = !st.fav;
-        renderStations();
+        star.classList.toggle('on', st.fav);
+        star.setAttribute('aria-pressed', String(st.fav));
         if (st.id === state.selectedId) renderMonitor();
         toast(st.fav ? `★ ${fmtHz(st.freq)} を登録しました` : `★ ${fmtHz(st.freq)} の登録を解除`);
         return;
