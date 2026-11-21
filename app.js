@@ -1355,6 +1355,7 @@
     // プリセット
     el.presetSelect.addEventListener('change', () => {
       applyPreset(el.presetSelect.value, { announce: true });
+      savePrefs();
       audio.init();
       audio.beep();
     });
