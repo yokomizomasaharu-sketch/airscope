@@ -227,6 +227,34 @@
     el.list.innerHTML = html;
   }
 
+  function updateRow(st) {
+    if (state.filter !== 'all') { renderStations(); return; }
+    const row = el.list.querySelector(`.st[data-id="${st.id}"]`);
+    if (!row) { renderStations(); return; }
+    row.classList.toggle('ended', st.status === 'ended');
+    const badge = row.querySelector('.st-badge');
+    if (badge) {
+      badge.className = 'badge st-badge ' + BADGE_CLASS[st.status];
+      badge.textContent = STATUS_TEXT[st.status];
+    }
+    const bar = row.querySelector('.st-bar i');
+    if (bar) {
+      bar.className = st.status === 'talking' ? 'orange' : st.status === 'ended' ? 'gray' : '';
+      bar.style.width = (st.status === 'ended' || st.sync == null) ? '0%' : clamp(st.sync, 0, 100) + '%';
+    }
+    const pct = row.querySelector('.st-pct');
+    if (pct) pct.textContent = (st.status === 'ended' || st.sync == null) ? '—' : st.sync.toFixed(1) + '%';
+    const slots = row.querySelector('.st-slots');
+    if (slots) {
+      slots.innerHTML = st.slots.map((s) => {
+        const c = s.t === 'call' ? 'call' : s.t === 'ctrl' ? 'on' : st.status === 'ended' ? 'dim' : '';
+        return `<i class="${c}"></i>`;
+      }).join('');
+    }
+    el.count.textContent = state.stations.length;
+    el.talking.textContent = talkingCount();
+  }
+
   function renderBulk() {
     el.bulkBar.hidden = !state.selectMode;
     el.bulkCount.textContent = state.checked.size;
@@ -376,8 +404,8 @@
 
   /* ── シミュレーション ─────────────────────────────────── */
   function touchStation(st) {
-    // 1局の状態変化を局一覧とモニターへ反映
-    renderStations();
+    // 1局の状態変化を局一覧とモニターへ反映（行は差分更新）
+    updateRow(st);
     if (st && st.id === state.selectedId) renderMonitor();
   }
 
@@ -388,6 +416,7 @@
     st.baseSig = -rand(36, 41);
     st.baseSnr = rand(18, 24);
     st.callId = opts.id || Math.floor(rand(1000, 9999));
+    if (!st.cc || st.cc === '—') st.cc = 1 + Math.floor(Math.random() * 15);
     st.callTimer = Math.round(rand(11, 27));
     st.slots = makeSlots('sync');
     st.slots[2] = { t: 'call', label: '通話', body: `${opts.mine ? '送信' : '呼出'} [ID ${st.callId}]・再生中`, level: 30 };   // TS2 に通話
@@ -432,7 +461,7 @@
           st.slots = st.slots.map((s) => s.t === 'call' ? { ...s, body: `呼出 [ID ${st.callId}]・${Math.random() < 0.82 ? '再生中' : '受信中'}` } : s);
         }
       } else if (st.status === 'sync') {
-        if (Math.random() < 0.028) startCall(st);
+        if (Math.random() < 0.018) startCall(st);
       } else if (st.status === 'judging') {
         st.sync = Math.min(99.6, st.sync + rand(1.2, 6.5));
         if (st.sync > 60) {
@@ -608,7 +637,7 @@
         const dx = x - fToX(s.freq);
         if (Math.abs(dx) > 70) continue;
         let amp = s.status === 'talking' ? 0.72 : s.status === 'sync' ? 0.34 : s.status === 'judging' ? 0.26 : 0.10;
-        if (s.status === 'talking') amp += Math.sin(t * 2.4 + s.freq) * 0.06;
+        if (!state.rx) amp *= 0.18; else if (s.status === 'talking') amp += Math.sin(t * 2.4 + s.freq) * 0.06;
         if (s.id === state.selectedId) amp *= 1.12;
         const sigma = s.status === 'talking' ? 7.5 : 5.2;
         v += amp * Math.exp(-(dx * dx) / (2 * sigma * sigma));
