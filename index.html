@@ -388,6 +388,7 @@
         <li><code>start_airscope_sdr.sh</code> を実行し、<code>ws://127.0.0.1:8765</code> で待ち受けます。</li>
         <li>AirScope の「受信ソース」→「Mac RTL-SDR」→「接続」でつながります。</li>
       </ol>
+      <p class="src-note">このモードは <strong>Mac のブラウザで AirScope を開いて</strong>使います（127.0.0.1 は Mac 自身を指すため、iPhone からは接続できません）。https のページから <code>ws://127.0.0.1</code> への接続は、Chrome / Safari ではローカル接続として許可されます。</p>
       <div class="code-block">
         <pre id="cmdSetup">brew install librtlsdr
 cd mac-sdr-bridge
