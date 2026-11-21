@@ -33,8 +33,211 @@
     { freq: 274.1375, org: 'K', status: 'judging', sync: 12.5, tg: null, dir: '下り', cc: '—' }
   ];
 
+  /* ── プリセット（バンド／局リスト） ───────────────────
+   * 南海・JR・空港の周波数は公開情報（AIP Japan、LiveATC.net、公開周波数リスト）
+   * で確認した「掲載値」です。このアプリは実電波を受信せず、受信・復調・通話は
+   * すべてブラウザ内のシミュレーションです。
+   */
+  const LAT = (icao) => `https://www.liveatc.net/search/?icao=${icao}`;
+
+  const PRESETS = [
+    {
+      id: 'std', group: '国内デモ', label: '標準デモ（273MHz STD-T79）',
+      range: [250, 292], center: 273.45, span: 2.048, fs: '2.048 MS/s',
+      mod: 'TDMA', stdMode: 'auto', stepMode: 'auto', main: 273.1125,
+      note: '架空の組織名 A〜K によるシミュレーション。実在の無線局・組織ではありません。',
+      src: 'デモ用の架空データ',
+      stations: SEED
+    },
+    {
+      id: 'nankai', group: '国内デモ', label: '南海電鉄（149.85 MHz 周辺）',
+      range: [145, 155], center: 149.85, span: 2.048, fs: '2.048 MS/s',
+      mod: 'FM', stdMode: 'アナログFM', stepMode: '12.5', main: 149.85,
+      note: '南海電鉄 本線 149.8500 MHz（指令）を中心に、関西の私鉄150MHz帯を公開リストから並べたデモです。周波数は参考値、実電波は受信していません。',
+      src: '参照: 公開周波数リスト（私鉄150MHz帯）',
+      stations: [
+        { freq: 149.0700, name: '阪急電鉄 神戸本線（移動）', tag: '150M', role: '移動局側・参考値', status: 'sync', sync: 92.4 },
+        { freq: 149.1900, name: '京阪電鉄', tag: '150M', role: '150MHz帯・参考値', status: 'judging', sync: 38.1 },
+        { freq: 149.4700, name: '京阪電鉄', tag: '150M', role: '150MHz帯・参考値', status: 'sync', sync: 97.8 },
+        { freq: 149.5100, name: '近畿日本鉄道', tag: '150M', role: '150MHz帯・参考値', status: 'sync', sync: 99.1 },
+        { freq: 149.5800, name: '近畿日本鉄道', tag: '150M', role: '150MHz帯・参考値', status: 'judging', sync: 21.6 },
+        { freq: 149.8300, name: '南海電鉄 高野線（指令）', tag: '150M', role: '指令側・参考値', status: 'sync', sync: 99.6 },
+        { freq: 149.8500, name: '南海電鉄 本線（指令）', tag: '150M', role: '指令側・メイン局', status: 'talking', sync: 99.9, callTimer: 26 },
+        { freq: 150.3700, name: '京阪電鉄', tag: '150M', role: '150MHz帯・参考値', status: 'sync', sync: 95.2 },
+        { freq: 150.3900, name: '阪神電鉄（指令）', tag: '150M', role: '指令側・参考値', status: 'sync', sync: 98.4 },
+        { freq: 150.9700, name: '新幹線 入換波', tag: '150M', role: '入換用・参考値', status: 'ended', sync: null }
+      ]
+    },
+    {
+      id: 'jr', group: '国内デモ', label: 'JR 鉄道無線（352MHz 帯）',
+      range: [330, 370], center: 352.58, span: 2.048, fs: '2.048 MS/s',
+      mod: 'FM', stdMode: 'アナログFM', stepMode: '12.5', main: 352.5375,
+      note: 'JR在来線 A/Bタイプ列車無線の基地局波（352.5MHz帯・8ch）を公開リストから並べたデモです。線区の割当は会社・線区ごとに異なります（車上側は336MHz帯、Cタイプは414〜415MHz帯）。実電波は受信していません。',
+      src: '参照: 公開周波数リスト（JR A/Bタイプ 352MHz帯）',
+      stations: [
+        { freq: 352.5000, name: 'A/Bタイプ 基地局（線区割当は会社ごと）', tag: 'JR', role: '基地局→列車・参考値', status: 'sync', sync: 94.8 },
+        { freq: 352.5375, name: 'A/Bタイプ 1ch 基地局', tag: 'JR', role: '基地局→列車・参考値', status: 'talking', sync: 99.9, callTimer: 22 },
+        { freq: 352.5500, name: 'A/Bタイプ 2ch 基地局', tag: 'JR', role: '基地局→列車・参考値', status: 'sync', sync: 98.2 },
+        { freq: 352.5625, name: 'A/Bタイプ 3ch 基地局', tag: 'JR', role: '基地局→列車・参考値', status: 'sync', sync: 96.5 },
+        { freq: 352.5750, name: 'A/Bタイプ 4ch 基地局', tag: 'JR', role: '基地局→列車・参考値', status: 'sync', sync: 99.3 },
+        { freq: 352.5875, name: 'A/Bタイプ 5ch 基地局', tag: 'JR', role: '基地局→列車・参考値', status: 'judging', sync: 27.4 },
+        { freq: 352.6000, name: 'A/Bタイプ 6ch 基地局', tag: 'JR', role: '基地局→列車・参考値', status: 'sync', sync: 91.7 },
+        { freq: 352.6125, name: 'A/Bタイプ 7ch 基地局', tag: 'JR', role: '基地局→列車・参考値', status: 'judging', sync: 12.9 },
+        { freq: 352.6250, name: 'A/Bタイプ 8ch 基地局', tag: 'JR', role: '基地局→列車・参考値', status: 'ended', sync: null }
+      ]
+    },
+    {
+      id: 'kix', group: '空港', label: '関西国際 KIX（RJBB）',
+      range: [117, 137], center: 123.0, span: 12.0, fs: '12.0 MS/s',
+      mod: 'AM', stdMode: 'AM (エアバンド)', stepMode: '25', main: 118.2,
+      note: 'KIX（関西国際）の公開周波数（AIP Japan 掲載値）を並べたデモです。受信・復調・通話はデモ表示で、実際の電波は受信していません。KIX は現在 LiveATC の公開フィードがありません。',
+      src: '参照: AIP Japan RJBB / airbinder.jp / LiveATC feed index',
+      stations: [
+        { freq: 118.2000, name: 'KIX Tower（RWY 06R/24L）', tag: 'TWR', role: 'Tower・メイン', status: 'talking', sync: 99.9, callTimer: 24 },
+        { freq: 118.0500, name: 'KIX Tower（RWY 06L/24R）', tag: 'TWR', role: 'Tower', status: 'sync', sync: 96.1 },
+        { freq: 121.6000, name: 'KIX Ground', tag: 'GND', role: 'Ground', status: 'sync', sync: 98.7 },
+        { freq: 121.9000, name: 'KIX Delivery', tag: 'DEL', role: 'Clearance Delivery', status: 'sync', sync: 93.4 },
+        { freq: 120.2500, name: 'Kansai Approach', tag: 'APP', role: 'Approach', status: 'sync', sync: 97.2 },
+        { freq: 119.2000, name: 'Kansai Departure', tag: 'DEP', role: 'Departure', status: 'judging', sync: 31.8 },
+        { freq: 127.8500, name: 'KIX ATIS（連続放送）', tag: 'ATIS', role: 'ATIS', status: 'sync', sync: 99.5, sticky: true },
+        { freq: 121.1000, name: 'Kansai TCA', tag: 'TCA', role: 'Terminal Control Area', status: 'judging', sync: 18.2 }
+      ]
+    },
+    {
+      id: 'itm', group: '空港', label: '大阪伊丹 ITM（RJOO）',
+      range: [117, 137], center: 123.0, span: 12.0, fs: '12.0 MS/s',
+      mod: 'AM', stdMode: 'AM (エアバンド)', stepMode: '25', main: 118.1,
+      note: 'ITM（大阪国際・伊丹）の公開周波数（AIP Japan 掲載値）を並べたデモです。実際の電波は受信していません。',
+      src: '参照: AIP Japan RJOO / airbinder.jp / LiveATC feed index',
+      liveatc: [{ icao: 'RJOO', label: 'RJOO Tower（Osaka Tower 118.100）ほか' }],
+      stations: [
+        { freq: 118.1000, name: 'Osaka Tower', tag: 'TWR', role: 'Tower・メイン', status: 'talking', sync: 99.9, callTimer: 25 },
+        { freq: 121.7000, name: 'Osaka Ground', tag: 'GND', role: 'Ground', status: 'sync', sync: 98.3 },
+        { freq: 118.8000, name: 'Osaka Delivery', tag: 'DEL', role: 'Clearance Delivery', status: 'sync', sync: 92.6 },
+        { freq: 120.4500, name: 'Kansai Approach（伊丹）', tag: 'APP', role: 'Approach（関西APP）', status: 'sync', sync: 96.8 },
+        { freq: 119.5000, name: 'Kansai Departure（伊丹）', tag: 'DEP', role: 'Departure（関西DEP）', status: 'judging', sync: 33.5 },
+        { freq: 128.6000, name: 'Osaka ATIS（連続放送）', tag: 'ATIS', role: 'ATIS', status: 'sync', sync: 99.4, sticky: true },
+        { freq: 127.5000, name: 'Osaka GCA', tag: 'GCA', role: 'GCA（着陸誘導）', status: 'judging', sync: 22.1 },
+        { freq: 121.1000, name: 'Kansai TCA', tag: 'TCA', role: 'Terminal Control Area', status: 'ended', sync: null }
+      ]
+    },
+    {
+      id: 'hnd', group: '空港', label: '東京羽田 HND（RJTT）',
+      range: [117, 137], center: 123.2, span: 12.0, fs: '12.0 MS/s',
+      mod: 'AM', stdMode: 'AM (エアバンド)', stepMode: '25', main: 118.1,
+      note: 'HND（東京国際・羽田）の公開周波数（AIP Japan 掲載値）を並べたデモです。実際の電波は受信していません。',
+      src: '参照: AIP Japan RJTT / airbinder.jp / LiveATC feed index',
+      liveatc: [{ icao: 'RJTT', label: 'RJTT Tower / Twr+TCA / App+Dep / ATIS' }],
+      stations: [
+        { freq: 118.1000, name: 'Tokyo Tower（A滑走路）', tag: 'TWR', role: 'Tower・主', status: 'talking', sync: 99.9, callTimer: 27 },
+        { freq: 124.3500, name: 'Tokyo Tower（C滑走路）', tag: 'TWR', role: 'Tower', status: 'sync', sync: 97.4 },
+        { freq: 121.7000, name: 'Tokyo Ground（第1ターミナル）', tag: 'GND', role: 'Ground', status: 'sync', sync: 95.8 },
+        { freq: 118.2250, name: 'Tokyo Ground（第2ターミナル）', tag: 'GND', role: 'Ground', status: 'judging', sync: 29.7 },
+        { freq: 119.1000, name: 'Tokyo Approach（主）', tag: 'APP', role: 'Approach・主', status: 'sync', sync: 98.9 },
+        { freq: 126.0000, name: 'Tokyo Departure（西方面・主）', tag: 'DEP', role: 'Departure・主', status: 'sync', sync: 96.3 },
+        { freq: 121.8250, name: 'Tokyo Delivery', tag: 'DEL', role: 'Clearance Delivery', status: 'sync', sync: 91.2 },
+        { freq: 124.7500, name: 'Tokyo TCA', tag: 'TCA', role: 'Terminal Control Area', status: 'judging', sync: 15.8 },
+        { freq: 128.8000, name: 'Tokyo ATIS（連続放送）', tag: 'ATIS', role: 'ATIS', status: 'sync', sync: 99.6, sticky: true }
+      ]
+    },
+    {
+      id: 'nrt', group: '空港', label: '成田 NRT（RJAA）',
+      range: [117, 137], center: 123.2, span: 12.0, fs: '12.0 MS/s',
+      mod: 'AM', stdMode: 'AM (エアバンド)', stepMode: '25', main: 118.2,
+      note: 'NRT（成田国際）の公開周波数（AIP Japan 掲載値）を並べたデモです。実際の電波は受信していません。',
+      src: '参照: AIP Japan RJAA / airbinder.jp / LiveATC feed index',
+      liveatc: [{ icao: 'RJAA', label: 'RJAA Tower (Both) / Approach / Ground / ATIS' }],
+      stations: [
+        { freq: 118.2000, name: 'Narita Tower（RWY 16R/34L）', tag: 'TWR', role: 'Tower・主', status: 'talking', sync: 99.9, callTimer: 23 },
+        { freq: 118.3500, name: 'Narita Tower（RWY 16L/34R）', tag: 'TWR', role: 'Tower', status: 'sync', sync: 97.9 },
+        { freq: 121.9500, name: 'Narita Ground（RWY-A）', tag: 'GND', role: 'Ground・主', status: 'sync', sync: 96.6 },
+        { freq: 121.8500, name: 'Narita Ground（RWY-B）', tag: 'GND', role: 'Ground', status: 'judging', sync: 34.2 },
+        { freq: 124.4000, name: 'Tokyo Approach（成田）', tag: 'APP', role: 'Approach・主', status: 'sync', sync: 98.1 },
+        { freq: 124.2000, name: 'Tokyo Departure（成田）', tag: 'DEP', role: 'Departure・主', status: 'sync', sync: 95.4 },
+        { freq: 121.9000, name: 'Narita Delivery', tag: 'DEL', role: 'Clearance Delivery', status: 'sync', sync: 90.8 },
+        { freq: 121.6000, name: 'Narita Ramp', tag: 'RAMP', role: 'Ramp Control', status: 'ended', sync: null },
+        { freq: 128.2500, name: 'Narita ATIS（連続放送）', tag: 'ATIS', role: 'ATIS', status: 'sync', sync: 99.3, sticky: true }
+      ]
+    },
+    {
+      id: 'fuk', group: '空港', label: '福岡 FUK（RJFF）',
+      range: [117, 137], center: 123.0, span: 12.0, fs: '12.0 MS/s',
+      mod: 'AM', stdMode: 'AM (エアバンド)', stepMode: '25', main: 118.4,
+      note: 'FUK（福岡）の公開周波数（AIP Japan 掲載値）を並べたデモです。実際の電波は受信していません。',
+      src: '参照: AIP Japan RJFF / airbinder.jp / LiveATC feed index',
+      liveatc: [{ icao: 'RJFF', label: 'RJFF Tower / Del+Gnd+TCA / Departure' }],
+      stations: [
+        { freq: 118.4000, name: 'Fukuoka Tower', tag: 'TWR', role: 'Tower・主', status: 'talking', sync: 99.9, callTimer: 21 },
+        { freq: 118.2500, name: 'Fukuoka Tower（副）', tag: 'TWR', role: 'Tower', status: 'sync', sync: 95.9 },
+        { freq: 121.7000, name: 'Fukuoka Ground', tag: 'GND', role: 'Ground', status: 'sync', sync: 97.7 },
+        { freq: 121.8000, name: 'Fukuoka Ground（副）', tag: 'GND', role: 'Ground', status: 'judging', sync: 26.5 },
+        { freq: 119.6500, name: 'Fukuoka Approach', tag: 'APP', role: 'Approach', status: 'sync', sync: 98.4 },
+        { freq: 127.9000, name: 'Fukuoka Departure', tag: 'DEP', role: 'Departure', status: 'sync', sync: 94.1 },
+        { freq: 121.9250, name: 'Fukuoka Delivery', tag: 'DEL', role: 'Clearance Delivery', status: 'sync', sync: 92.3 },
+        { freq: 127.2000, name: 'Fukuoka ATIS（連続放送）', tag: 'ATIS', role: 'ATIS', status: 'sync', sync: 99.2, sticky: true },
+        { freq: 121.2750, name: 'Fukuoka TCA', tag: 'TCA', role: 'Terminal Control Area', status: 'ended', sync: null }
+      ]
+    },
+    {
+      id: 'rcss', group: '海外', label: '台北松山 RCSS（LiveATC）',
+      range: [117, 137], center: 122.0, span: 12.0, fs: '12.0 MS/s',
+      mod: 'AM', stdMode: 'AM (エアバンド)', stepMode: '25', main: 118.1,
+      note: '台北松山（RCSS）の周波数と、LiveATC.net の公開フィードで確認した周波数を並べています。音声は外部のLiveATCが配信する実音声です（アプリ内では受信しません）。台北桃園（RCTP）とソウル仁川（RKSI）は現在 LiveATC の公開フィードがありません。RCTP の進入管制 125.100 は RCSS のフィードで聴取できます。',
+      src: '参照: LiveATC.net RCSS / 台北FIR公開周波数',
+      liveatc: [{ icao: 'RCSS', label: 'RCSS Tower/App/Dep（Songshan Tower 118.100 ほか）' }],
+      stations: [
+        { freq: 118.1000, name: 'Songshan Tower', tag: 'TWR', role: 'Tower', status: 'talking', sync: 99.9, callTimer: 19 },
+        { freq: 121.9000, name: 'Songshan Ground', tag: 'GND', role: 'Ground', status: 'sync', sync: 96.4 },
+        { freq: 119.6000, name: 'Taipei Arrival/Departure', tag: 'APP', role: 'Taipei APP/DEP', status: 'sync', sync: 98.6 },
+        { freq: 119.7000, name: 'Taipei Arrival/Departure', tag: 'DEP', role: 'Taipei APP/DEP', status: 'judging', sync: 32.3 },
+        { freq: 125.1000, name: 'Taipei APP（RCTP 進入）', tag: 'APP', role: '桃園の進入管制', status: 'sync', sync: 94.7 },
+        { freq: 125.5000, name: 'FIR Service（North Taiwan）', tag: 'CTR', role: 'FIR', status: 'judging', sync: 11.4 },
+        { freq: 121.5000, name: 'Emergency / Guard', tag: 'EMG', role: '緊急・Guard', status: 'ended', sync: null }
+      ]
+    },
+    {
+      id: 'vhhh', group: '海外', label: '香港 VHHH（LiveATC）',
+      range: [117, 137], center: 121.5, span: 12.0, fs: '12.0 MS/s',
+      mod: 'AM', stdMode: 'AM (エアバンド)', stepMode: '25', main: 118.2,
+      note: '香港国際（VHHH）の周波数を LiveATC.net の公開フィードから並べています。音声は外部のLiveATCが配信する実音声です（アプリ内では受信しません）。',
+      src: '参照: LiveATC.net VHHH',
+      liveatc: [{ icao: 'VHHH', label: 'VHHH Del/Gnd/Twr/Dir と App/Dep/Dir/Zone' }],
+      stations: [
+        { freq: 118.2000, name: 'Hong Kong Tower（North）', tag: 'TWR', role: 'Tower', status: 'talking', sync: 99.9, callTimer: 24 },
+        { freq: 118.4000, name: 'Hong Kong Tower（South）', tag: 'TWR', role: 'Tower', status: 'sync', sync: 97.6 },
+        { freq: 121.6000, name: 'Hong Kong Ground（North）', tag: 'GND', role: 'Ground', status: 'sync', sync: 95.2 },
+        { freq: 122.1500, name: 'Hong Kong Delivery', tag: 'DEL', role: 'Clearance Delivery', status: 'sync', sync: 91.9 },
+        { freq: 119.1000, name: 'Hong Kong Approach', tag: 'APP', role: 'Approach', status: 'sync', sync: 98.8 },
+        { freq: 123.8000, name: 'Hong Kong Departure', tag: 'DEP', role: 'Departure', status: 'judging', sync: 28.4 },
+        { freq: 119.5000, name: 'Hong Kong Director', tag: 'DIR', role: 'Director', status: 'sync', sync: 96.2 },
+        { freq: 121.5000, name: 'Emergency / Guard', tag: 'EMG', role: '緊急・Guard', status: 'ended', sync: null }
+      ]
+    },
+    {
+      id: 'rpll', group: '海外', label: 'マニラ RPLL（LiveATC）',
+      range: [117, 137], center: 121.0, span: 12.0, fs: '12.0 MS/s',
+      mod: 'AM', stdMode: 'AM (エアバンド)', stepMode: '25', main: 118.1,
+      note: 'マニラ（RPLL）の周波数を LiveATC.net の公開フィードから並べています。音声は外部のLiveATCが配信する実音声です（アプリ内では受信しません）。',
+      src: '参照: LiveATC.net RPLL',
+      liveatc: [{ icao: 'RPLL', label: 'RPLL Tower / Approach+Departure / Ground' }],
+      stations: [
+        { freq: 118.1000, name: 'Manila Tower', tag: 'TWR', role: 'Tower', status: 'talking', sync: 99.9, callTimer: 22 },
+        { freq: 121.8000, name: 'Manila Ground', tag: 'GND', role: 'Ground', status: 'sync', sync: 96.9 },
+        { freq: 119.9000, name: 'Manila Approach/Departure', tag: 'APP', role: 'Approach/Departure', status: 'sync', sync: 98.2 },
+        { freq: 124.4000, name: 'Manila Approach/Departure', tag: 'DEP', role: 'Approach/Departure', status: 'judging', sync: 30.6 },
+        { freq: 120.5000, name: 'Manila Center', tag: 'CTR', role: 'Control', status: 'sync', sync: 93.8 }
+      ]
+    }
+  ];
+
   const state = {
     stations: [],
+    preset: 'std',
+    presetObj: PRESETS[0],
+    range: [250, 292],
+    span: SPAN,
+    fs: '2.048 MS/s',
+    mod: 'TDMA',
     selectedId: null,
     tuned: 273.1125,
     center: 273.45,
@@ -82,8 +285,12 @@
     return {
       id: 'st' + i,
       freq: seed.freq,
-      org: seed.org,
-      std: 'T79',
+      org: seed.org || seed.name,
+      name: seed.name || ('組織名 ' + seed.org),
+      tag: seed.tag || (seed.std || 'T79'),
+      role: seed.role || null,
+      sticky: !!seed.sticky,
+      std: seed.std || 'T79',
       dir: seed.dir,
       cc: seed.cc,
       tg: seed.tg,
@@ -101,30 +308,118 @@
     };
   }
 
-  function initStations() {
-    state.stations = SEED.map(makeStation);
-    state.selectedId = state.stations[3].id;
-    state.tuned = state.stations[3].freq;
-    state.center = 273.45;
+  /* プリセットを適用して局リストを作り直す */
+  function applyPreset(id, opts = {}) {
+    const preset = PRESETS.find((p) => p.id === id) || PRESETS[0];
+    state.preset = preset.id;
+    state.presetObj = preset;
+    state.range = preset.range.slice();
+    state.span = preset.span;
+    state.fs = preset.fs;
+    state.mod = preset.mod;
+    state.stdMode = preset.stdMode;
+    state.stepMode = preset.stepMode;
+    state.step = STEP_MAP[preset.stepMode] || STEP_MAP.auto;
+    state.filter = 'all';
+    state.checked.clear();
+    state.selectMode = false;
+    state.recManual = false;
+    state.recSeconds = 0;
+    state.center = preset.center;
     state.centerAuto = true;
-    state.history = seedHistory();
+    state.stations = preset.stations.map(makeStation);
+    const main = state.stations.find((s) => Math.abs(s.freq - preset.main) < 0.0001) || state.stations[0];
+    state.selectedId = main ? main.id : null;
+    state.tuned = main ? main.freq : preset.center;
+    state.history = seedHistory(preset);
+
+    syncPresetUI();
+    if (!opts.silent) {
+      renderStations();
+      renderBulk();
+      renderMonitor();
+      updateDynamic();
+      renderHistory();
+      if (opts.announce) toast(`プリセット「${preset.label}」に切替（デモ表示）`);
+    }
   }
 
-  function seedHistory() {
+  /* プリセットに依存する UI（選択・注記・LiveATCリンク・規格・ステップ）を揃える */
+  function syncPresetUI() {
+    const p = state.presetObj;
+    if (el.presetSelect) el.presetSelect.value = p.id;
+    if (el.presetNote) {
+      el.presetNote.innerHTML = `${p.note}${p.src ? `<span class="src">${p.src}／受信はシミュレーション</span>` : ''}`;
+    }
+    if (el.liveAtcBox) {
+      if (p.liveatc && p.liveatc.length) {
+        el.liveAtcBox.hidden = false;
+        el.liveAtcBox.innerHTML = p.liveatc.map((l) =>
+          `<a class="btn liveatc" href="${LAT(l.icao)}" target="_blank" rel="noopener noreferrer">\u25B6 LiveATCで実際の管制音声を聴く（${l.icao}）</a>`
+        ).join('') + `<span class="liveatc-meta">${p.liveatc.map((l) => l.label).join(' / ')}<br>外部サイト LiveATC.net（別タブ）。本アプリは音声を受信・配信していません。</span>`;
+      } else {
+        el.liveAtcBox.hidden = true;
+        el.liveAtcBox.innerHTML = '';
+      }
+    }
+    if (el.std) el.std.value = p.stdMode;
+    if (el.step) el.step.value = p.stepMode;
+    if (el.groupChip) el.groupChip.hidden = p.mod !== 'TDMA';
+    $$('.chip').forEach((b) => {
+      const on = b.dataset.filter === 'all';
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-selected', String(on));
+    });
+    if (el.autoScan) el.autoScan.checked = state.autoScan;
+  }
+
+  function seedHistory(preset) {
     const t = Date.now();
-    return [
-      { at: t - 1000 * 60 * 21, freq: 273.4125, org: 'F', kind: '通話', dur: 41, id: 4471 },
-      { at: t - 1000 * 60 * 54, freq: 273.1125, org: 'A', kind: '通話', dur: 22, id: 1234 },
-      { at: t - 1000 * 60 * 96, freq: 273.3125, org: 'E', kind: '録音', dur: 8, id: 0 }
-    ];
+    if (!preset || preset.id === 'std') {
+      return [
+        { at: t - 1000 * 60 * 21, freq: 273.4125, org: 'F', kind: '通話', dur: 41, id: 4471 },
+        { at: t - 1000 * 60 * 54, freq: 273.1125, org: 'A', kind: '通話', dur: 22, id: 1234 },
+        { at: t - 1000 * 60 * 96, freq: 273.3125, org: 'E', kind: '録音', dur: 8, id: 0 }
+      ];
+    }
+    return preset.stations
+      .filter((s) => s.status !== 'ended')
+      .slice(0, 3)
+      .map((s, i) => ({
+        at: t - 1000 * 60 * (9 + i * 23),
+        freq: s.freq,
+        org: s.name,
+        kind: i === 0 ? '通話' : '録音',
+        dur: 14 + i * 13,
+        id: 1200 + i * 37
+      }));
   }
 
   const selected = () => state.stations.find((s) => s.id === state.selectedId) || null;
+  const stLabel = (st) => (st && st.role ? st.name : `[組織名 ${st ? st.org : '—'}]`);
   const talkingCount = () => state.stations.filter((s) => s.status === 'talking' && s.seen).length;
+  const STATUS_TEXT_AM = { talking: '受信中', sync: '待受け', judging: '探索中', ended: '圏外', idle: '待機' };
+  function statusText(st) {
+    if (state.mod === 'AM' && STATUS_TEXT_AM[st.status]) return STATUS_TEXT_AM[st.status];
+    return STATUS_TEXT[st.status];
+  }
 
   /* ── DOM ─────────────────────────────────────────────── */
   const el = {
     list: $('#stationList'),
+    presetSelect: $('#presetSelect'),
+    presetNote: $('#presetNote'),
+    liveAtcBox: $('#liveAtcBox'),
+    groupChip: $('.chip[data-filter="group"]'),
+    autoScan: $('#autoScan'),
+    autoFollow: $('#autoFollow'),
+    kSignal: $('#kSignal'),
+    kSnr: $('#kSnr'),
+    kSync: $('#kSync'),
+    kCodec: $('#kCodec'),
+    uSync: $('#uSync'),
+    uCodec: $('#uCodec'),
+    levelHead: $('#levelHeadText'),
     count: $('#stationCount'),
     talking: $('#talkingCount'),
     freqInput: $('#freqInput'),
@@ -182,7 +477,7 @@
       const c = s.t === 'call' ? 'call' : s.t === 'ctrl' ? 'on' : st.status === 'ended' ? 'dim' : '';
       return `<i class="${c}"></i>`;
     }).join('');
-    const badge = `<span class="badge st-badge ${BADGE_CLASS[st.status]}">${STATUS_TEXT[st.status]}</span>`;
+    const badge = `<span class="badge st-badge ${BADGE_CLASS[st.status]}">${statusText(st)}</span>`;
     const sel = st.id === state.selectedId ? ' selected' : '';
     const kind = st.status === 'ended' ? ' ended' : '';
     const checked = state.checked.has(st.id) ? ' checked' : '';
@@ -197,7 +492,7 @@
         <span class="st-slots">${slots}</span>
         <button class="st-star${st.fav ? ' on' : ''}" data-act="fav" type="button" aria-label="お気に入り" aria-pressed="${st.fav}">★</button>
       </div>
-      <div class="st-row2"><span class="st-org">[組織名 ${st.org}]</span><span class="st-std">・${st.std}</span></div>
+      <div class="st-row2"><span class="st-org">${st.name}</span><span class="st-std">・${st.tag}</span></div>
     </div>`;
   }
 
@@ -242,7 +537,7 @@
     const badge = row.querySelector('.st-badge');
     if (badge) {
       badge.className = 'badge st-badge ' + BADGE_CLASS[st.status];
-      badge.textContent = STATUS_TEXT[st.status];
+      badge.textContent = statusText(st);
     }
     const bar = row.querySelector('.st-bar i');
     if (bar) {
@@ -271,12 +566,45 @@
 
   /* ── モニター描画 ─────────────────────────────────────── */
   function stdLabel(st) {
+    if (state.stdMode === 'AM (エアバンド)') return 'AM（エアバンド）';
+    if (state.stdMode === 'アナログFM') return 'アナログFM（12.5k）';
     if (state.stdMode !== 'auto') return `${state.stdMode}（強制）`;
     return `STD-${st ? st.std : 'T79'}（自動判定）`;
   }
   function codecLabel(st) {
+    if (state.stdMode === 'AM (エアバンド)') return 'AM';
+    if (state.stdMode === 'アナログFM') return '12.5';
     const mode = state.stdMode !== 'auto' ? state.stdMode : `STD-${st ? st.std : 'T79'}`;
     return CODECS[mode] || 'AMBE+ 4000';
+  }
+
+  /* AM（エアバンド）用の受信状態パネル（TDMAスロットの代わり） */
+  function amSlots(st) {
+    const on = !!(st && st.status === 'talking' && state.rx);
+    const weak = !!(st && st.status === 'sync' && state.rx);
+    const cells = [
+      { k: '搬送波', s: on ? '検出' : weak ? '微弱' : 'なし', b: on ? '安定 / AGC 動作中' : weak ? 'ノイズ内' : 'ノイズのみ', cls: on ? 'open' : weak ? 'ctrl' : 'empty' },
+      { k: 'スケルチ', s: on ? 'OPEN' : 'CLOSE', b: on ? '音声を出力' : '閾値以下で閉', cls: on ? 'open' : 'empty' },
+      { k: '変調', s: 'AM', b: on ? '変調度 30%' : '無変調', cls: on ? 'open' : 'ctrl' },
+      { k: '音声', s: on ? '復調中' : '無音', b: on ? 'AM 復調 → 出力' : '待受け', cls: on ? 'open' : 'empty' }
+    ];
+    return cells.map((c) =>
+      `<div class="slot am ${c.cls}"><div class="slot-top"><span class="slot-id">${c.k}</span><span class="badge ${c.cls === 'open' ? 'talking' : 'judging'}">${c.s}</span></div><div class="slot-body">${c.b}</div></div>`
+    ).join('');
+  }
+
+  /* 規格に応じた計測ラベル（AM / FM / TDMA） */
+  function applyMetricLabels() {
+    if (!el.kSync) return;
+    const am = state.stdMode === 'AM (エアバンド)';
+    const fm = state.stdMode === 'アナログFM';
+    el.kSignal.textContent = '信号';
+    el.kSnr.textContent = 'SNR';
+    el.kSync.textContent = am ? '変調度' : fm ? '復調' : '同期率';
+    el.uSync.textContent = am ? '%' : '';
+    el.kCodec.textContent = am ? '復調' : fm ? '帯域' : '符号器';
+    el.uCodec.textContent = fm ? 'kHz' : '';
+    if (el.levelHead) el.levelHead.textContent = am ? '搬送波レベル（スケルチ判定）' : '音声レベル（区切り判定）';
   }
 
   function slotHtml(s, i) {
@@ -297,25 +625,35 @@
 
     const badgeState = !state.rx ? 'off' : st ? st.status : 'idle';
     el.monState.className = 'badge ' + (badgeState === 'off' ? 'off' : BADGE_CLASS[badgeState]);
-    el.monState.textContent = !state.rx ? '停止中' : STATUS_TEXT[badgeState];
+    el.monState.textContent = !state.rx ? '停止中' : st ? statusText(st) : STATUS_TEXT[badgeState];
 
     el.bigFreq.textContent = fmtHz(state.tuned);
     el.monSub.textContent = st
-      ? (state.stdMode === 'アナログFM' ? `[組織名 ${st.org}]・${st.dir}` : `[組織名 ${st.org}]・${st.dir}・CC ${st.cc}`)
+      ? (st.role ? `${st.name}・${st.role}`
+        : state.stdMode === 'アナログFM' ? `[組織名 ${st.org}]・${st.dir || ''}`
+        : `[組織名 ${st.org}]・${st.dir}・CC ${st.cc}`)
       : '未登録周波数・ノイズのみ';
 
+    applyMetricLabels();
     el.mCodec.textContent = st ? codecLabel(st) : '—';
 
-    // slots
+    // slots（AM（エアバンド）は受信状態表示に切替）
+    const am = (state.stdMode === 'AM (エアバンド)');
     const analog = (state.stdMode === 'アナログFM');
-    el.slotTitle.textContent = analog ? 'スロット（アナログ）' : 'スロット（TDMA 4スロット）';
-    if (analog) {
+    if (am) {
+      el.slotTitle.textContent = 'AM 受信状態（エアバンド）';
+      el.slots.innerHTML = amSlots(st);
+    } else if (analog) {
+      el.slotTitle.textContent = 'スロット（アナログ）';
       const lvl = st && st.status === 'talking' ? 42 : 6;
       el.slots.innerHTML = `<div class="slot analog"><div class="slot-top"><span class="slot-id">FM</span><span class="badge sync">アナログ</span></div><div class="slot-body">音声復調中・スロット分割なし</div><div class="slot-meter"><i style="width:${lvl}%"></i></div></div>`;
-    } else if (st) {
-      el.slots.innerHTML = st.slots.map(slotHtml).join('');
     } else {
-      el.slots.innerHTML = [0, 1, 2, 3].map((i) => `<div class="slot empty"><div class="slot-top"><span class="slot-id">TS${i}</span><span class="badge judging">空き</span></div><div class="slot-body">—</div></div>`).join('');
+      el.slotTitle.textContent = 'スロット（TDMA 4スロット）';
+      if (st) {
+        el.slots.innerHTML = st.slots.map(slotHtml).join('');
+      } else {
+        el.slots.innerHTML = [0, 1, 2, 3].map((i) => `<div class="slot empty"><div class="slot-top"><span class="slot-id">TS${i}</span><span class="badge judging">空き</span></div><div class="slot-body">—</div></div>`).join('');
+      }
     }
 
     el.favBtn.classList.toggle('on', isFav(st));
@@ -326,9 +664,9 @@
   }
 
   function renderSpanInfo() {
-    const lo = state.center - SPAN / 2;
-    const hi = state.center + SPAN / 2;
-    el.spanInfo.textContent = `${lo.toFixed(3)} - ${hi.toFixed(3)} MHz・中心 ${state.center.toFixed(4)}（${state.centerAuto ? '自動' : '手動'}）・2.048 MS/s`;
+    const lo = state.center - state.span / 2;
+    const hi = state.center + state.span / 2;
+    el.spanInfo.textContent = `${lo.toFixed(3)} - ${hi.toFixed(3)} MHz・中心 ${state.center.toFixed(4)}（${state.centerAuto ? '自動' : '手動'}）・${state.fs}`;
   }
 
   function isFav(st) {
@@ -357,7 +695,14 @@
     const m = metricsFor(st);
     el.mSignal.textContent = m.sig.toFixed(1);
     el.mSnr.textContent = m.snr.toFixed(1);
-    el.mSync.textContent = st && st.sync != null ? m.sync.toFixed(1) : '—';
+    if (state.stdMode === 'アナログFM') {
+      el.mSync.textContent = 'FM';
+    } else if (state.stdMode === 'AM (エアバンド)') {
+      const depth = st && st.status === 'talking' && state.rx ? 26 + Math.abs(Math.sin(levelPhase * 0.6)) * 9 : 0;
+      el.mSync.textContent = depth.toFixed(0);
+    } else {
+      el.mSync.textContent = st && st.sync != null ? m.sync.toFixed(1) : '—';
+    }
 
     // 音声レベル（区切り判定）
     let target;
@@ -432,7 +777,7 @@
     if (state.autoFollow) {
       const prev = state.selectedId;
       selectStation(st.id, { silent: true });
-      if (prev !== st.id) toast(`通話開始 → ${fmtHz(st.freq)} [組織名 ${st.org}] へ自動切替`);
+      if (prev !== st.id) toast(`通話開始 → ${fmtHz(st.freq)} ${stLabel(st)} へ自動切替`);
     } else {
       touchStation(st);
     }
@@ -462,6 +807,7 @@
   function simTick() {
     if (!state.rx) return;
     state.stations.forEach((st) => {
+      if (st.sticky) return;   // ATIS など連続放送は状態を保つ
       if (st.status === 'talking') {
         st.callTimer -= 1;
         if (st.callTimer <= 0) { endCall(st); return; }
@@ -478,7 +824,7 @@
           st.baseSig = -rand(48, 55);
           st.baseSnr = rand(11, 15);
           st.slots = makeSlots('sync');
-          toast(`同期確立: ${fmtHz(st.freq)} [組織名 ${st.org}]`);
+          toast(`同期確立: ${fmtHz(st.freq)} ${stLabel(st)}`);
           touchStation(st);
         }
       } else if (st.status === 'ended' && state.autoScan) {
@@ -505,7 +851,7 @@
     state.selectedId = id;
     state.tuned = st.freq;
     // 帯域外なら追従
-    const lo = state.center - SPAN / 2, hi = state.center + SPAN / 2;
+    const lo = state.center - state.span / 2, hi = state.center + state.span / 2;
     if (st.freq < lo + 0.08 || st.freq > hi - 0.08) { state.center = st.freq; state.centerAuto = true; }
     if (st.status !== 'talking') state.recSeconds = 0;
     paintSelection();
@@ -514,7 +860,7 @@
   }
 
   function tuneTo(freq, opts = {}) {
-    freq = clamp(Math.round(freq * 10000) / 10000, 250, 292);
+    freq = clamp(Math.round(freq * 10000) / 10000, state.range[0], state.range[1]);
     const near = state.stations.reduce((best, s) => {
       const d = Math.abs(s.freq - freq);
       return (!best || d < best.d) && d <= Math.max(state.step, 0.00625) / 2 + 0.0001 ? { s, d } : best;
@@ -526,7 +872,7 @@
     // 未登録周波数
     state.selectedId = null;
     state.tuned = freq;
-    if (freq < state.center - SPAN / 2 || freq > state.center + SPAN / 2) { state.center = freq; state.centerAuto = true; }
+    if (freq < state.center - state.span / 2 || freq > state.center + state.span / 2) { state.center = freq; state.centerAuto = true; }
     paintSelection();
     renderMonitor();
     if (opts.announce) toast(`${fmtHz(freq)} MHz：未登録周波数（ノイズのみ）`);
@@ -603,8 +949,8 @@
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   }
 
-  const fToX = (f) => (f - (state.center - SPAN / 2)) / SPAN * CW;
-  const xToF = (x) => state.center - SPAN / 2 + (x / CW) * SPAN;
+  const fToX = (f) => (f - (state.center - state.span / 2)) / state.span * CW;
+  const xToF = (x) => state.center - state.span / 2 + (x / CW) * state.span;
 
   function noiseAt(i, t) {
     return 0.055
@@ -640,7 +986,7 @@
     // 波形の生成
     const stepPx = 2;
     const pts = [];
-    const visible = state.stations.filter((s) => s.freq > state.center - SPAN / 2 - 0.02 && s.freq < state.center + SPAN / 2 + 0.02);
+    const visible = state.stations.filter((s) => s.freq > state.center - state.span / 2 - state.span * 0.01 && s.freq < state.center + state.span / 2 + state.span * 0.01);
     for (let x = 0; x <= CW; x += stepPx) {
       let v = noiseAt(x * 0.5, t);
       for (const s of visible) {
@@ -733,11 +1079,11 @@
     ctx.strokeStyle = 'rgba(120,150,185,.18)';
     ctx.beginPath(); ctx.moveTo(0, plotBottom + .5); ctx.lineTo(CW, plotBottom + .5); ctx.stroke();
 
-    const lo = state.center - SPAN / 2, hi = state.center + SPAN / 2;
+    const lo = state.center - state.span / 2, hi = state.center + state.span / 2;
     ctx.font = '9.5px ui-monospace, SFMono-Regular, Menlo, monospace';
     ctx.fillStyle = '#5f7085';
     ctx.textAlign = 'center';
-    const tickStep = 0.4;
+    const tickStep = state.span <= 2.5 ? 0.4 : state.span <= 6 ? 1 : 2;
     for (let f = Math.ceil(lo / tickStep) * tickStep; f < hi; f += tickStep) {
       const x = fToX(f);
       if (x < 16 || x > CW - 16) continue;
@@ -890,7 +1236,8 @@
       localStorage.setItem(PREF_KEY, JSON.stringify({
         speed: state.speed, squelch: state.squelch, audio: state.audio,
         volume: state.volume, muted: state.muted, stdMode: state.stdMode,
-        stepMode: state.stepMode, autoScan: state.autoScan, autoFollow: state.autoFollow
+        stepMode: state.stepMode, autoScan: state.autoScan, autoFollow: state.autoFollow,
+        preset: state.preset
       }));
     } catch (e) { /* 保存できない環境では無視 */ }
   }
@@ -907,6 +1254,7 @@
     if (typeof p.stepMode === 'string' && STEP_MAP[p.stepMode]) state.stepMode = p.stepMode;
     if (typeof p.autoScan === 'boolean') state.autoScan = p.autoScan;
     if (typeof p.autoFollow === 'boolean') state.autoFollow = p.autoFollow;
+    if (typeof p.preset === 'string' && PRESETS.some((x) => x.id === p.preset)) state.preset = p.preset;
   }
 
   /* ── UI バインド ──────────────────────────────────────── */
@@ -986,7 +1334,7 @@
     function commitFreq() {
       const v = parseFloat(el.freqInput.value.replace(/[^0-9.]/g, ''));
       if (!isFinite(v) || v <= 0) { toast('周波数を数値で入力してください'); el.freqInput.value = fmtHz(state.tuned); return; }
-      if (v < 250 || v > 292) { toast('このデモの帯域は 250–292 MHz です'); el.freqInput.value = fmtHz(state.tuned); return; }
+      if (v < state.range[0] || v > state.range[1]) { toast(`このプリセットの帯域は ${state.range[0]}–${state.range[1]} MHz です`); el.freqInput.value = fmtHz(state.tuned); return; }
       tuneTo(v, { announce: true });
     }
 
@@ -995,12 +1343,20 @@
     // 呼び出し
     $('#callBtn').addEventListener('click', () => {
       audio.init();
+      if (state.mod !== 'TDMA') { toast('このプリセットは受信専用です（送信・呼び出しはしません）'); return; }
       if (!state.rx) { toast('受信停止中です。先に受信を開始してください'); return; }
       const st = selected();
       if (!st) { toast('未登録周波数には呼び出しできません'); return; }
       if (st.status === 'talking') { toast('この局は既に通話中です'); return; }
       startCall(st, { mine: true, id: Math.floor(rand(2000, 2999)) });
-      toast(`呼出を送信 → ${fmtHz(st.freq)} [組織名 ${st.org}]（デモ）`);
+      toast(`呼出を送信 → ${fmtHz(st.freq)} ${stLabel(st)}（デモ）`);
+    });
+
+    // プリセット
+    el.presetSelect.addEventListener('change', () => {
+      applyPreset(el.presetSelect.value, { announce: true });
+      audio.init();
+      audio.beep();
     });
 
     // ステップ
@@ -1087,15 +1443,11 @@
       toast(state.audio ? 'デモ音をON' : 'デモ音をOFF');
     });
     $('#resetDemo').addEventListener('click', () => {
-      initStations();
-      state.recSeconds = 14;
+      applyPreset(state.preset, { silent: true });
+      state.recSeconds = 0;
       state.recManual = false;
-      state.filter = 'all';
-      state.checked.clear();
-      state.selectMode = false;
-      $$('.chip').forEach((b) => { const on = b.dataset.filter === 'all'; b.classList.toggle('active', on); b.setAttribute('aria-selected', String(on)); });
-      renderStations(); renderBulk(); renderMonitor(); updateDynamic();
-      toast('デモを初期状態に戻しました');
+      renderStations(); renderBulk(); renderMonitor(); updateDynamic(); renderHistory();
+      toast('このプリセットを初期状態に戻しました');
       closeModals();
     });
 
@@ -1131,7 +1483,7 @@
       const dx = e.clientX - dragStartX;
       if (Math.abs(dx) > 3) dragMoved = true;
       if (dragMoved) {
-        state.center = clamp(dragStartCenter - dx * SPAN / CW, 250, 292);
+        state.center = clamp(dragStartCenter - dx * state.span / CW, state.range[0], state.range[1]);
         state.centerAuto = false;
         renderSpanInfo();
       }
@@ -1146,14 +1498,14 @@
         const snapped = Math.round(f / state.step) * state.step;
         audio.init();
         tuneTo(snapped);
-        toast(`${fmtHz(clamp(snapped, 250, 292))} MHz へチューニング`);
+        toast(`${fmtHz(clamp(snapped, state.range[0], state.range[1]))} MHz へチューニング`);
       }
     });
     canvas.addEventListener('pointerleave', () => { hoverX = -1; });
     canvas.addEventListener('wheel', (e) => {
       e.preventDefault();
       const dir = e.deltaY > 0 ? 1 : -1;
-      state.center = clamp(state.center + dir * state.step, 250, 292);
+      state.center = clamp(state.center + dir * state.step, state.range[0], state.range[1]);
       state.centerAuto = false;
       renderSpanInfo();
     }, { passive: false });
@@ -1179,9 +1531,9 @@
   }
 
   function boot() {
-    initStations();
     loadPrefs();
     bindUI();
+    applyPreset(state.preset, { silent: true });
     applyPrefsToUI();
     renderStations();
     renderBulk();

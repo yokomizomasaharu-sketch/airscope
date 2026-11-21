@@ -16,7 +16,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="styles.css?v=8">
+<link rel="stylesheet" href="styles.css?v=9">
 </head>
 <body>
 <svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
@@ -82,6 +82,7 @@
       <option value="DMR">DMR</option>
       <option value="NXDN">NXDN</option>
       <option value="アナログFM">アナログFM</option>
+      <option value="AM (エアバンド)">AM (エアバンド)</option>
     </select>
   </div>
 
@@ -94,6 +95,34 @@
 
 <main class="layout">
   <aside class="panel stations">
+    <div class="preset-bar">
+      <div class="preset-head">
+        <label class="field-label" for="presetSelect">プリセット</label>
+        <span id="presetBadge" class="badge demo">デモ表示</span>
+      </div>
+      <select id="presetSelect" class="select preset-select" aria-label="プリセット（バンドと局リスト）">
+        <optgroup label="国内デモ（公開周波数）">
+          <option value="std">標準デモ（273MHz STD-T79）</option>
+          <option value="nankai">南海電鉄（149.85 MHz 周辺）</option>
+          <option value="jr">JR 鉄道無線（352MHz 帯）</option>
+        </optgroup>
+        <optgroup label="日本主要空港（エアバンド AM）">
+          <option value="kix">関西国際 KIX（RJBB）</option>
+          <option value="itm">大阪伊丹 ITM（RJOO）</option>
+          <option value="hnd">東京羽田 HND（RJTT）</option>
+          <option value="nrt">成田 NRT（RJAA）</option>
+          <option value="fuk">福岡 FUK（RJFF）</option>
+        </optgroup>
+        <optgroup label="海外空港（LiveATC 実音声）">
+          <option value="rcss">台北松山 RCSS（LiveATC）</option>
+          <option value="vhhh">香港 VHHH（LiveATC）</option>
+          <option value="rpll">マニラ RPLL（LiveATC）</option>
+        </optgroup>
+      </select>
+      <p id="presetNote" class="preset-note"></p>
+      <div id="liveAtcBox" class="liveatc-box" hidden></div>
+    </div>
+
     <div class="panel-head">
       <h2>局一覧</h2>
       <span class="meta"><span id="stationCount">11</span>局・通話中 <span id="talkingCount">2</span></span>
@@ -135,6 +164,7 @@
         <span class="m-label">規格</span>
         <span id="monStd" class="mon-std">STD-T79（自動判定）</span>
         <span id="monState" class="badge talking">通話中</span>
+        <span id="demoBadge" class="badge demo">デモ表示・実電波は受信していません</span>
         <button id="recBtn" class="rec" type="button" aria-pressed="false"><i class="rec-dot" aria-hidden="true"></i><span id="recText">録音中 00:14</span></button>
         <div class="vol">
           <button id="muteBtn" class="vol-btn" type="button" aria-label="ミュート" aria-pressed="false"><svg class="ico" aria-hidden="true"><use id="muteIcon" href="#i-speaker"/></svg></button>
@@ -151,10 +181,10 @@
       <div id="monSub" class="mon-sub">[組織名 A]・下り・CC 3</div>
 
       <div class="metrics">
-        <div class="metric"><div class="k">信号</div><div class="v"><span id="mSignal">-38.2</span> <em>dB</em></div></div>
-        <div class="metric"><div class="k">SNR</div><div class="v"><span id="mSnr">21.4</span> <em>dB</em></div></div>
-        <div class="metric"><div class="k">同期率</div><div class="v"><span id="mSync">99.9</span> <em>%</em></div></div>
-        <div class="metric"><div class="k">符号器</div><div class="v"><span id="mCodec">AMBE+ 4000</span></div></div>
+        <div class="metric"><div class="k" id="kSignal">信号</div><div class="v"><span id="mSignal">-38.2</span> <em id="uSignal">dB</em></div></div>
+        <div class="metric"><div class="k" id="kSnr">SNR</div><div class="v"><span id="mSnr">21.4</span> <em id="uSnr">dB</em></div></div>
+        <div class="metric"><div class="k" id="kSync">同期率</div><div class="v"><span id="mSync">99.9</span> <em id="uSync">%</em></div></div>
+        <div class="metric"><div class="k" id="kCodec">符号器</div><div class="v"><span id="mCodec">AMBE+ 4000</span> <em id="uCodec"></em></div></div>
       </div>
 
       <div class="sub-head">
@@ -164,7 +194,7 @@
       <div id="slots" class="slots"></div>
 
       <div class="sub-head level-head">
-        <span>音声レベル（区切り判定）</span>
+        <span id="levelHeadText">音声レベル（区切り判定）</span>
         <span class="hint"><span id="levelText">床 -58.0 / 閾値 -49.0 dBFS</span></span>
       </div>
       <div class="levelbar">
@@ -249,6 +279,6 @@
 
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-<script src="app.js?v=8" defer></script>
+<script src="app.js?v=9" defer></script>
 </body>
 </html>
