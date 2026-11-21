@@ -1328,7 +1328,8 @@
       if (e.key === 'Escape') { el.freqInput.blur(); renderMonitor(); }
     });
     el.freqInput.addEventListener('blur', () => {
-      if (!el.freqInput.value.trim()) el.freqInput.value = fmtHz(state.tuned);
+      // 未確定の入力は捨てて、実際のチューニング周波数に戻す
+      el.freqInput.value = fmtHz(state.tuned);
     });
 
     function commitFreq() {
