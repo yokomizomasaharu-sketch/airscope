@@ -230,6 +230,101 @@
     }
   ];
 
+  /* ── LiveATC 実在フィード（2026-11-21 実地確認・すべて Feed Status: UP） ──
+   * マウント名は LiveATC.net の各空港ページ（myHTML5Popup('mount','icao')）から取得。
+   * 公式プレーヤーは https://www.liveatc.net/hlisten.php?mount=<mount>&icao=<icao>。
+   * 直接の <audio> 再生は、配信元がCloudflareの403/HTMLを返すため不可（実測）。
+   */
+  const LIVEATC = {
+    kix: {
+      icao: 'RJBB', name: '関西国際 KIX', feeds: [],
+      note: 'KIX（関西国際）は LiveATC の公開フィードがありません。伊丹（RJOO Tower）や各地のフィードで関西圏の一部が聴けます。'
+    },
+    itm: {
+      icao: 'RJOO', name: '大阪伊丹 ITM', feeds: [
+        { mount: 'rjoo1', label: 'RJOO Tower', freqs: 'Osaka Tower 118.100' }
+      ]
+    },
+    hnd: {
+      icao: 'RJTT', name: '東京羽田 HND', feeds: [
+        { mount: 'rjtt_twr', label: 'RJTT Twr/TCA', freqs: 'Tower 118.100・118.575・118.725・124.350 / TCA 124.750' },
+        { mount: 'rjtt_app_dep', label: 'RJTT App/Dep', freqs: 'Approach 119.100・119.400 / Departure 120.800・126.000' },
+        { mount: 'rjtt_gnd', label: 'RJTT Del/Ground', freqs: 'Delivery 121.825 / Ground 118.225・121.625・121.700・121.975' },
+        { mount: 'rjtt_twr_tca', label: 'RJTT Del/Twr/TCA/Gnd', freqs: 'Tower・Ground・TCA・Delivery をまとめて' },
+        { mount: 'rjtt_app', label: 'RJTT Approach', freqs: 'Approach 119.100・119.400・119.650' },
+        { mount: 'rjtt_dep', label: 'RJTT Departure', freqs: 'Departure 120.800・126.000' },
+        { mount: 'rjtt_atis', label: 'RJTT ATIS', freqs: 'ATIS 128.800（連続放送）' },
+        { mount: 'rjtt_control', label: 'RJTT Tokyo Control', freqs: 'Control 120.500・123.700・125.900・128.125・132.100' }
+      ]
+    },
+    nrt: {
+      icao: 'RJAA', name: '成田 NRT', feeds: [
+        { mount: 'rjaa_twr', label: 'RJAA Tower (Both)', freqs: 'Tower 118.200（16R/34L）・118.350（16L/34R）' },
+        { mount: 'rjaa_twr1', label: 'RJAA Tower #1', freqs: 'Tower 118.200（Rwy 16R/34L）' },
+        { mount: 'rjaa_twr2', label: 'RJAA Tower #2', freqs: 'Tower 118.350（Rwy 16L/34R）' },
+        { mount: 'rjaa_app_s', label: 'RJAA Approach', freqs: 'Approach 124.400・127.700' },
+        { mount: 'rjaa_dep', label: 'RJAA Departure', freqs: 'Departure 119.600・124.200' },
+        { mount: 'rjaa_gnd1', label: 'RJAA Ground #1', freqs: 'Ground 121.850' },
+        { mount: 'rjaa_gnd2', label: 'RJAA Ground #2', freqs: 'Ground 121.950' },
+        { mount: 'rjaa_del', label: 'RJAA Clearance Delivery', freqs: 'Delivery 121.650（Asia/Pacific）・121.900（US/Europe）' },
+        { mount: 'rjaa_atis', label: 'RJAA ATIS', freqs: 'ATIS 128.250（連続放送）' },
+        { mount: 'rjaa_tca', label: 'RJAA TCA', freqs: 'TCA 119.450' }
+      ]
+    },
+    fuk: {
+      icao: 'RJFF', name: '福岡 FUK', feeds: [
+        { mount: 'rjff3_twr', label: 'RJFF Tower', freqs: 'Tower 118.400・126.200' },
+        { mount: 'rjff3_app1', label: 'RJFF App/Radar', freqs: 'Approach 119.650 / Radar 121.125' },
+        { mount: 'rjff3_app2', label: 'RJFF Del/Gnd/TCA', freqs: 'Ground 121.700 / Delivery 121.925 / TCA 121.275' },
+        { mount: 'rjff3_dep', label: 'RJFF Departure', freqs: 'Departure 127.900・119.700・128.450' },
+        { mount: 'rjff3_ctl', label: 'RJFF Control (Misc)', freqs: 'Control 133.150・133.600・135.300 / Kobe Control 135.650・118.900・133.850' }
+      ]
+    },
+    rcss: {
+      icao: 'RCSS', name: '台北松山 RCSS', feeds: [
+        { mount: 'rcss2', label: 'RCSS Tower/App/Dep', freqs: 'Tower 118.100 / Ground 121.900 / APP 119.600・119.700 / RCTP進入 125.100 / FIR 125.500' }
+      ]
+    },
+    vhhh: {
+      icao: 'VHHH', name: '香港 VHHH', feeds: [
+        { mount: 'vhhh5', label: 'VHHH App/Dep/Dir/Zone', freqs: 'Approach 119.100・119.350 / Departure 122.000・123.800・124.050 / Director 119.500 / Zone 120.600' },
+        { mount: 'vhhh9', label: 'VHHH Del/Gnd/Twr/Dir/Misc', freqs: 'Tower 118.200・118.400・118.700 / Ground 121.600・121.875・122.550 / Delivery 122.150' }
+      ]
+    },
+    rpll: {
+      icao: 'RPLL', name: 'マニラ RPLL', feeds: [
+        { mount: 'rpll', label: 'RPLL Tower', freqs: 'Manila Tower 118.100' },
+        { mount: 'rpll_app_119900', label: 'RPLL App/Dep 119.9', freqs: 'Approach/Departure 119.900' },
+        { mount: 'rpll_app_124400', label: 'RPLL App/Dep 124.4', freqs: 'Approach/Departure 124.400' },
+        { mount: 'rpll_app_124800', label: 'RPLL App/Dep 124.8', freqs: 'Approach/Departure 124.800' },
+        { mount: 'rpll_gnd', label: 'RPLL Ground', freqs: 'Ground 121.800' },
+        { mount: 'rpll_control_120500', label: 'Manila Center 120.5', freqs: 'Control 120.500' },
+        { mount: 'rpll_ramp1', label: 'RPLL Ramp T3', freqs: 'Ramp/Taxi 121.550' },
+        { mount: 'rpll_ramp_t4', label: 'RPLL Ramp T4', freqs: 'Ramp 123.250' },
+        { mount: 'rpll_ramp2', label: 'RPLL Ramp/Taxi 121.7', freqs: 'Ramp/Taxi 121.700' }
+      ]
+    }
+  };
+
+  const LAT_PLAYER = (mount, icao) => `https://www.liveatc.net/hlisten.php?mount=${encodeURIComponent(mount)}&icao=${encodeURIComponent((icao || '').toLowerCase())}`;
+
+  /* ── CHIRP-next 用 CSV（UV-K5 など）────────────────────
+   * 列は CHIRP-next の汎用CSVドライバ（chirp/drivers/generic_csv.py の ATTR_MAP）と
+   * 公式ストック設定CSVの書き出し形式に合わせています。
+   * Duplex=off で送信無効（UV-K5 は 118–137MHz を送信できないため必須）。
+   */
+  const CHIRP_HEADER = ['Location', 'Name', 'Frequency', 'Duplex', 'Offset', 'Tone', 'rToneFreq', 'cToneFreq', 'DtcsCode', 'DtcsPolarity', 'RxDtcsCode', 'CrossMode', 'Mode', 'TStep', 'Skip', 'Power', 'Comment', 'URCALL', 'RPT1CALL', 'RPT2CALL', 'DVCODE'];
+  const CHIRP_INFO = {
+    kix: { code: 'KIX', mode: 'AM', step: '25.00' },
+    itm: { code: 'ITM', mode: 'AM', step: '25.00' },
+    hnd: { code: 'HND', mode: 'AM', step: '25.00' },
+    nrt: { code: 'NRT', mode: 'AM', step: '25.00' },
+    fuk: { code: 'FUK', mode: 'AM', step: '25.00' },
+    nankai: { code: 'NK', mode: 'NFM', step: '12.50' },
+    jr: { code: 'JR', mode: 'NFM', step: '12.50' }
+  };
+  const CHIRP_SET_IDS = ['kix', 'itm', 'hnd', 'nrt', 'fuk', 'nankai', 'jr'];
+
   const state = {
     stations: [],
     preset: 'std',
@@ -261,7 +356,20 @@
     checked: new Set(),
     level: -50,
     favFreqs: new Set(),
-    unread: 0
+    unread: 0,
+    source: 'demo',          // demo | sdr | ext
+    wsUrl: 'ws://127.0.0.1:8765',
+    latMute: true,           // LiveATCを開いたらデモ音をミュート
+    latMuted: false,
+    extDevice: ''
+  };
+
+  const isLive = () => state.source !== 'demo';
+  const SRC_NAME = { demo: 'デモ', sdr: 'RTL-SDR', ext: '外部入力' };
+  const SRC_BADGE = {
+    demo: 'デモ表示・実電波は受信していません',
+    sdr: 'RTL-SDR',
+    ext: '外部受信機 マイク／ライン入力'
   };
 
   /* ── 局の生成 ─────────────────────────────────────────── */
@@ -331,7 +439,9 @@
     const main = state.stations.find((s) => Math.abs(s.freq - preset.main) < 0.0001) || state.stations[0];
     state.selectedId = main ? main.id : null;
     state.tuned = main ? main.freq : preset.center;
-    state.history = seedHistory(preset);
+    // 実音声の録音（履歴の url 付き）はプリセットを変えても残す
+    const kept = state.history.filter((h) => h.url);
+    state.history = kept.concat(seedHistory(preset)).slice(0, 60);
 
     syncPresetUI();
     if (!opts.silent) {
@@ -345,23 +455,22 @@
   }
 
   /* プリセットに依存する UI（選択・注記・LiveATCリンク・規格・ステップ）を揃える */
+  function presNoteHtml(p) {
+    if (state.source === 'sdr') {
+      return `周波数リスト（${p.label}）。局を選ぶと Mac 側の RTL-SDR がその周波数に同調します。スペクトラム・音声は実受信です。<span class="src">RTL-SDR · WebSocket</span>`;
+    }
+    if (state.source === 'ext') {
+      return `周波数リスト（${p.label}）。UV-K5 本体のダイヤルで合わせた周波数を選ぶと、その局名で履歴に残せます。音声は外部受信機のライン入力です。<span class="src">外部受信機 · マイク／ライン入力</span>`;
+    }
+    return `${p.note}${p.src ? `<span class="src">${p.src}／受信はシミュレーション</span>` : ''}`;
+  }
+
   function syncPresetUI() {
     const p = state.presetObj;
     if (el.presetSelect) el.presetSelect.value = p.id;
-    if (el.presetNote) {
-      el.presetNote.innerHTML = `${p.note}${p.src ? `<span class="src">${p.src}／受信はシミュレーション</span>` : ''}`;
-    }
-    if (el.liveAtcBox) {
-      if (p.liveatc && p.liveatc.length) {
-        el.liveAtcBox.hidden = false;
-        el.liveAtcBox.innerHTML = p.liveatc.map((l) =>
-          `<a class="btn liveatc" href="${LAT(l.icao)}" target="_blank" rel="noopener noreferrer">\u25B6 LiveATCで実際の管制音声を聴く（${l.icao}）</a>`
-        ).join('') + `<span class="liveatc-meta">${p.liveatc.map((l) => l.label).join(' / ')}<br>外部サイト LiveATC.net（別タブ）。本アプリは音声を受信・配信していません。</span>`;
-      } else {
-        el.liveAtcBox.hidden = true;
-        el.liveAtcBox.innerHTML = '';
-      }
-    }
+    if (el.presetNote) el.presetNote.innerHTML = presNoteHtml(p);
+    if (el.liveAtcBox) renderLiveAtc();
+    if (el.chirpBtn) el.chirpBtn.hidden = !CHIRP_INFO[p.id];
     if (el.std) el.std.value = p.stdMode;
     if (el.step) el.step.value = p.stepMode;
     if (el.groupChip) el.groupChip.hidden = p.mod !== 'TDMA';
@@ -371,6 +480,27 @@
       b.setAttribute('aria-selected', String(on));
     });
     if (el.autoScan) el.autoScan.checked = state.autoScan;
+  }
+
+  function renderLiveAtc() {
+    if (!el.liveAtcBox) return;
+    const p = state.presetObj;
+    const info = LIVEATC[p.id];
+    if (!info) { el.liveAtcBox.hidden = true; el.liveAtcBox.innerHTML = ''; return; }
+    el.liveAtcBox.hidden = false;
+    const head = `<div class="lat-head"><span class="lat-title">LiveATC 実音声（外部サイト）</span>` +
+      `<a class="lat-all" href="https://www.liveatc.net/search/?icao=${info.icao}" target="_blank" rel="noopener noreferrer">${info.icao} の全フィード</a></div>`;
+    const buttons = info.feeds.map((f) =>
+      `<button class="btn liveatc" type="button" data-lat-mount="${f.mount}" data-lat-icao="${info.icao}" aria-label="LiveATCで${f.label}を聞く">` +
+      `<span class="lat-lbl">▶ ${f.label}</span><span class="lat-freq">${f.freqs}</span></button>`
+    ).join('');
+    const openAttr = (typeof window !== 'undefined' && window.innerWidth >= 861) ? ' open' : '';
+    el.liveAtcBox.innerHTML = head +
+      `<details class="lat-details"${openAttr}>` +
+      `<summary class="lat-summary">フィードを選ぶ（${info.feeds.length}）</summary>` +
+      `<div class="lat-list">${buttons || `<p class="lat-none">${info.note}</p>`}</div>` +
+      `</details>` +
+      `<span class="liveatc-meta">公式プレーヤー（LiveATC.net）を別ウィンドウで開きます。開くとデモ音を自動でミュートし、閉じると元に戻します。<br>ブラウザ内での直接再生は配信元の403/CORS制限でできないため、この方式にしています。</span>`;
   }
 
   function seedHistory(preset) {
@@ -397,7 +527,7 @@
 
   const selected = () => state.stations.find((s) => s.id === state.selectedId) || null;
   const stLabel = (st) => (st && st.role ? st.name : `[組織名 ${st ? st.org : '—'}]`);
-  const talkingCount = () => state.stations.filter((s) => s.status === 'talking' && s.seen).length;
+  const talkingCount = () => (isLive() ? 0 : state.stations.filter((s) => s.status === 'talking' && s.seen).length);
   const STATUS_TEXT_AM = { talking: '受信中', sync: '待受け', judging: '探索中', ended: '圏外', idle: '待機' };
   function statusText(st) {
     if (state.mod === 'AM' && STATUS_TEXT_AM[st.status]) return STATUS_TEXT_AM[st.status];
@@ -409,6 +539,7 @@
     list: $('#stationList'),
     presetSelect: $('#presetSelect'),
     presetNote: $('#presetNote'),
+    presetBadge: $('#presetBadge'),
     liveAtcBox: $('#liveAtcBox'),
     groupChip: $('.chip[data-filter="group"]'),
     autoScan: $('#autoScan'),
@@ -417,6 +548,8 @@
     kSnr: $('#kSnr'),
     kSync: $('#kSync'),
     kCodec: $('#kCodec'),
+    uSignal: $('#uSignal'),
+    uSnr: $('#uSnr'),
     uSync: $('#uSync'),
     uCodec: $('#uCodec'),
     levelHead: $('#levelHeadText'),
@@ -456,7 +589,41 @@
     speedVal: $('#speedVal'),
     sqRange: $('#sqRange'),
     sqVal: $('#sqVal'),
-    audioToggle: $('#audioToggle')
+    audioToggle: $('#audioToggle'),
+    /* 受信ソース */
+    sourceBtn: $('#sourceBtn'),
+    srcDot: $('#srcDot'),
+    srcName: $('#srcName'),
+    sourceBadge: $('#sourceBadge'),
+    chirpBtn: $('#chirpBtn'),
+    wsUrl: $('#wsUrl'),
+    wsConnectBtn: $('#wsConnectBtn'),
+    wsDisconnectBtn: $('#wsDisconnectBtn'),
+    wsGuideBtn: $('#wsGuideBtn'),
+    wsStateVal: $('#wsStateVal'),
+    wsDeviceVal: $('#wsDeviceVal'),
+    wsTuneVal: $('#wsTuneVal'),
+    wsFftVal: $('#wsFftVal'),
+    wsPcmVal: $('#wsPcmVal'),
+    wsLastVal: $('#wsLastVal'),
+    sdrPanel: $('#sdrPanel'),
+    extPanel: $('#extPanel'),
+    extDevice: $('#extDevice'),
+    extRefreshBtn: $('#extRefreshBtn'),
+    extStartBtn: $('#extStartBtn'),
+    extStopBtn: $('#extStopBtn'),
+    extStateVal: $('#extStateVal'),
+    extLevelVal: $('#extLevelVal'),
+    extRateVal: $('#extRateVal'),
+    extRecVal: $('#extRecVal'),
+    extMonToggle: $('#extMonToggle'),
+    extHowl: $('#extHowl'),
+    setSourceVal: $('#setSourceVal'),
+    setSourceBtn: $('#setSourceBtn'),
+    chirpCurBtn: $('#chirpCurBtn'),
+    chirpAllBtn: $('#chirpAllBtn'),
+    latMuteToggle: $('#latMuteToggle'),
+    specHint: $('.spec-hint')
   };
 
   /* ── トースト ─────────────────────────────────────────── */
@@ -470,14 +637,20 @@
 
   /* ── 局一覧の描画 ─────────────────────────────────────── */
   function rowHtml(st) {
-    const st_cls = st.status === 'talking' ? 'orange' : st.status === 'ended' ? 'gray' : '';
-    const pct = st.status === 'ended' || st.sync == null ? '—' : st.sync.toFixed(1) + '%';
-    const barW = st.status === 'ended' || st.sync == null ? 0 : clamp(st.sync, 0, 100);
+    const live = isLive();
+    const selLive = st.id === state.selectedId;
+    const badgeCls = live ? (selLive ? 'talking' : 'idle') : BADGE_CLASS[st.status];
+    const badgeTxt = live
+      ? (selLive ? (state.source === 'sdr' ? '同調' : '受信') : '—')
+      : statusText(st);
+    const st_cls = live ? (selLive ? 'orange' : 'gray') : st.status === 'talking' ? 'orange' : st.status === 'ended' ? 'gray' : '';
+    const pct = live || st.status === 'ended' || st.sync == null ? '—' : st.sync.toFixed(1) + '%';
+    const barW = live || st.status === 'ended' || st.sync == null ? 0 : clamp(st.sync, 0, 100);
     const slots = st.slots.map((s) => {
-      const c = s.t === 'call' ? 'call' : s.t === 'ctrl' ? 'on' : st.status === 'ended' ? 'dim' : '';
+      const c = live ? 'dim' : s.t === 'call' ? 'call' : s.t === 'ctrl' ? 'on' : st.status === 'ended' ? 'dim' : '';
       return `<i class="${c}"></i>`;
     }).join('');
-    const badge = `<span class="badge st-badge ${BADGE_CLASS[st.status]}">${statusText(st)}</span>`;
+    const badge = `<span class="badge st-badge ${badgeCls}">${badgeTxt}</span>`;
     const sel = st.id === state.selectedId ? ' selected' : '';
     const kind = st.status === 'ended' ? ' ended' : '';
     const checked = state.checked.has(st.id) ? ' checked' : '';
@@ -530,6 +703,7 @@
   }
 
   function updateRow(st) {
+    if (isLive()) { renderStations(); return; }
     if (state.filter !== 'all') { renderStations(); return; }
     const row = el.list.querySelector(`.st[data-id="${st.id}"]`);
     if (!row) { renderStations(); return; }
@@ -566,6 +740,8 @@
 
   /* ── モニター描画 ─────────────────────────────────────── */
   function stdLabel(st) {
+    if (state.source === 'sdr') return `RTL-SDR（${sdr.mode === 'am' ? 'AM' : 'FM'}·Mac側で復調）`;
+    if (state.source === 'ext') return '外部受信機（復調は受信機側）';
     if (state.stdMode === 'AM (エアバンド)') return 'AM（エアバンド）';
     if (state.stdMode === 'アナログFM') return 'アナログFM（12.5k）';
     if (state.stdMode !== 'auto') return `${state.stdMode}（強制）`;
@@ -593,14 +769,55 @@
     ).join('');
   }
 
+  function liveSlots() {
+    const sdrSrc = state.source === 'sdr';
+    const ready = sdrSrc ? sdr.status === 'open' : !!ext.stream;
+    const open = ready && (sdrSrc ? sdr.squelchOpen && state.rx : ext.level > state.squelch && state.rx);
+    const cells = [
+      { k: '入力', s: ready ? 'あり' : 'なし', b: sdrSrc ? (ready ? `${(sdr.signalDbfs == null ? -120 : sdr.signalDbfs).toFixed(1)} dBFS` : 'bridge.py 未接続') : (ready ? `${ext.level.toFixed(1)} dBFS` : 'マイク停止中'), cls: ready ? 'ctrl' : 'empty' },
+      { k: 'スケルチ', s: open ? 'OPEN' : 'CLOSE', b: open ? '音声を出力' : `閾値 ${state.squelch.toFixed(1)} dBFS`, cls: open ? 'open' : 'empty' },
+      { k: '変調', s: sdrSrc ? (sdr.mode === 'am' ? 'AM' : 'FM') : '音声', b: sdrSrc ? 'AM/FMはMac側で復調' : '外部受信機の復調音声', cls: ready ? 'ctrl' : 'empty' },
+      { k: '音声', s: open ? '出力中' : '無音', b: state.muted ? 'ミュート中' : `音量 ${state.volume}%`, cls: open ? 'open' : 'empty' }
+    ];
+    return cells.map((c) =>
+      `<div class="slot am ${c.cls}"><div class="slot-top"><span class="slot-id">${c.k}</span><span class="badge ${c.cls === 'open' ? 'talking' : 'judging'}">${c.s}</span></div><div class="slot-body">${c.b}</div></div>`
+    ).join('');
+  }
+
   /* 規格に応じた計測ラベル（AM / FM / TDMA） */
   function applyMetricLabels() {
     if (!el.kSync) return;
+    if (state.source === 'sdr') {
+      el.kSignal.textContent = '信号';
+      el.kSnr.textContent = 'SNR';
+      el.kSync.textContent = 'FFT更新';
+      el.kCodec.textContent = '復調';
+      el.uSignal.textContent = 'dBFS';
+      el.uSnr.textContent = 'dB';
+      el.uSync.textContent = 'Hz';
+      el.uCodec.textContent = '';
+      if (el.levelHead) el.levelHead.textContent = '入力レベル（スケルチ判定）';
+      return;
+    }
+    if (state.source === 'ext') {
+      el.kSignal.textContent = '入力';
+      el.kSnr.textContent = 'ピーク';
+      el.kSync.textContent = '帯域';
+      el.kCodec.textContent = 'サンプル';
+      el.uSignal.textContent = 'dBFS';
+      el.uSnr.textContent = 'dBFS';
+      el.uSync.textContent = 'kHz';
+      el.uCodec.textContent = 'kHz';
+      if (el.levelHead) el.levelHead.textContent = '入力レベル（スケルチ判定）';
+      return;
+    }
     const am = state.stdMode === 'AM (エアバンド)';
     const fm = state.stdMode === 'アナログFM';
     el.kSignal.textContent = '信号';
     el.kSnr.textContent = 'SNR';
     el.kSync.textContent = am ? '変調度' : fm ? '復調' : '同期率';
+    el.uSignal.textContent = 'dB';
+    el.uSnr.textContent = 'dB';
     el.uSync.textContent = am ? '%' : '';
     el.kCodec.textContent = am ? '復調' : fm ? '帯域' : '符号器';
     el.uCodec.textContent = fm ? 'kHz' : '';
@@ -619,28 +836,43 @@
 
   function renderMonitor() {
     const st = selected();
-    state.tuned = st ? st.freq : state.tuned;
+    if (!isLive()) state.tuned = st ? st.freq : state.tuned;
 
     el.monStd.textContent = stdLabel(st);
+    updateSourceBadge();
 
-    const badgeState = !state.rx ? 'off' : st ? st.status : 'idle';
+    let badgeState, badgeText;
+    if (!state.rx) { badgeState = 'off'; badgeText = '停止中'; }
+    else if (state.source === 'sdr') {
+      badgeState = sdr.status === 'open' ? (sdr.squelchOpen ? 'talking' : 'sync') : 'off';
+      badgeText = sdr.status === 'open' ? (sdr.squelchOpen ? '受信中' : '待受け') : '未接続';
+    } else if (state.source === 'ext') {
+      badgeState = ext.stream ? (ext.level > state.squelch ? 'talking' : 'sync') : 'off';
+      badgeText = ext.stream ? (ext.level > state.squelch ? '受信中' : '待受け') : '入力停止';
+    } else {
+      badgeState = st ? st.status : 'idle';
+      badgeText = st ? statusText(st) : STATUS_TEXT[badgeState];
+    }
     el.monState.className = 'badge ' + (badgeState === 'off' ? 'off' : BADGE_CLASS[badgeState]);
-    el.monState.textContent = !state.rx ? '停止中' : st ? statusText(st) : STATUS_TEXT[badgeState];
+    el.monState.textContent = badgeText;
 
-    el.bigFreq.textContent = fmtHz(state.tuned);
-    el.monSub.textContent = st
-      ? (st.role ? `${st.name}・${st.role}`
-        : state.stdMode === 'アナログFM' ? `[組織名 ${st.org}]・${st.dir || ''}`
-        : `[組織名 ${st.org}]・${st.dir}・CC ${st.cc}`)
-      : '未登録周波数・ノイズのみ';
+    el.bigFreq.textContent = fmtHz(shownFreq());
+    el.monSub.textContent = monSubText(st);
 
     applyMetricLabels();
-    el.mCodec.textContent = st ? codecLabel(st) : '—';
+    el.mCodec.textContent = state.source === 'sdr' ? (sdr.mode === 'am' ? 'AM' : 'FM')
+      : state.source === 'ext' ? (ext.rate ? (ext.rate / 1000).toFixed(1) : '—')
+      : st ? codecLabel(st) : '—';
 
     // slots（AM（エアバンド）は受信状態表示に切替）
     const am = (state.stdMode === 'AM (エアバンド)');
     const analog = (state.stdMode === 'アナログFM');
-    if (am) {
+    if (isLive()) {
+      el.slotTitle.textContent = state.source === 'sdr'
+        ? `実機受信状態（${sdr.mode === 'am' ? 'AM' : 'FM'}・Mac側で復調）`
+        : '入力状態（外部受信機の復調音声）';
+      el.slots.innerHTML = liveSlots();
+    } else if (am) {
       el.slotTitle.textContent = 'AM 受信状態（エアバンド）';
       el.slots.innerHTML = amSlots(st);
     } else if (analog) {
@@ -664,6 +896,16 @@
   }
 
   function renderSpanInfo() {
+    if (state.source === 'sdr') {
+      const c = sdr.centerHz ? sdr.centerHz / 1e6 : state.center;
+      const sp = sdr.spanHz ? sdr.spanHz / 1e6 : state.span;
+      el.spanInfo.textContent = `${(c - sp / 2).toFixed(3)} - ${(c + sp / 2).toFixed(3)} MHz・中心 ${c.toFixed(4)}（実機）・${sdr.displayRate ? (sdr.displayRate / 1e6).toFixed(2) + ' MS/s' : '—'}`;
+      return;
+    }
+    if (state.source === 'ext') {
+      el.spanInfo.textContent = `オーディオ入力 0 - ${ext.rate ? (ext.rate / 2000).toFixed(1) : '—'} kHz・${ext.rate ? (ext.rate / 1000).toFixed(1) + ' kS/s' : '—'}`;
+      return;
+    }
     const lo = state.center - state.span / 2;
     const hi = state.center + state.span / 2;
     el.spanInfo.textContent = `${lo.toFixed(3)} - ${hi.toFixed(3)} MHz・中心 ${state.center.toFixed(4)}（${state.centerAuto ? '自動' : '手動'}）・${state.fs}`;
@@ -691,6 +933,7 @@
 
   let levelPhase = 0;
   function updateDynamic() {
+    if (isLive()) { updateLiveDynamic(); return; }
     const st = selected();
     const m = metricsFor(st);
     el.mSignal.textContent = m.sig.toFixed(1);
@@ -744,7 +987,69 @@
     audio.tick();
   }
 
+  let liveKey = '';
+  function updateLiveDynamic() {
+    const sdrSrc = state.source === 'sdr';
+
+    // 外部受信機: アナライザーから入力レベル（RMS / ピーク）を求める
+    if (!sdrSrc && ext.analyser) {
+      const td = ext.time || (ext.time = new Float32Array(ext.analyser.fftSize));
+      ext.analyser.getFloatTimeDomainData(td);
+      let sum = 0, pk = 0;
+      for (let i = 0; i < td.length; i++) {
+        const v = td[i];
+        sum += v * v;
+        const a = Math.abs(v);
+        if (a > pk) pk = a;
+      }
+      const rms = Math.sqrt(sum / td.length);
+      ext.level = rms > 1e-6 ? Math.max(-120, 20 * Math.log10(rms)) : -120;
+      ext.peak = pk > 1e-6 ? Math.max(-120, 20 * Math.log10(pk)) : -120;
+    }
+
+    const ready = sdrSrc ? sdr.status === 'open' : !!ext.stream;
+    const open = ready && state.rx && (sdrSrc ? sdr.squelchOpen : ext.level > state.squelch);
+
+    if (sdrSrc) {
+      el.mSignal.textContent = sdr.signalDbfs == null ? '—' : sdr.signalDbfs.toFixed(1);
+      el.mSnr.textContent = sdr.snrDb == null ? '—' : sdr.snrDb.toFixed(1);
+      el.mSync.textContent = sdr.fftHz ? sdr.fftHz.toFixed(0) : '—';
+    } else {
+      el.mSignal.textContent = ext.level > -120 ? ext.level.toFixed(1) : '—';
+      el.mSnr.textContent = ext.peak > -120 ? ext.peak.toFixed(1) : '—';
+      el.mSync.textContent = ext.rate ? (ext.rate / 2000).toFixed(1) : '—';
+    }
+
+    if (el.extLevelVal) {
+      el.extLevelVal.textContent = ext.level > -100 ? `${ext.level.toFixed(1)} dBFS` : '—';
+    }
+    if (el.extRateVal && ext.rate) el.extRateVal.textContent = `${(ext.rate / 1000).toFixed(1)} kHz`;
+
+    const raw = sdrSrc ? (sdr.signalDbfs == null ? -100 : sdr.signalDbfs) : ext.level;
+    const target = state.rx ? raw : -100;
+    state.level = state.level * 0.6 + target * 0.4;
+    const pct = clamp((state.level + 80) / 60 * 100, 0, 100);
+    el.levelFill.style.width = pct.toFixed(1) + '%';
+    el.levelThresh.style.left = clamp((state.squelch + 80) / 60 * 100, 0, 100) + '%';
+    el.levelText.textContent = `${sdrSrc ? '入力' : '床'} ${state.level.toFixed(1)} / 閾値 ${state.squelch.toFixed(1)} dBFS`;
+
+    const key = [ready, open, state.muted, state.volume, state.squelch, sdrSrc ? sdr.mode : '', ext.monitor, state.rx].join('|');
+    if (key !== liveKey) { liveKey = key; renderMonitor(); }
+
+    updateRecUI();
+    audio.tick();
+  }
+
   function updateRecUI() {
+    if (isLive()) {
+      const rec = !!ext.rec;
+      const secs = rec ? Math.round((Date.now() - ext.recStart) / 1000) : 0;
+      el.recBtn.classList.toggle('live', rec);
+      el.recBtn.classList.remove('manual');
+      el.recText.textContent = rec ? `録音中 ${pad2(secs / 60)}:${pad2(secs % 60)}` : '録音';
+      if (el.extRecVal) el.extRecVal.textContent = rec ? `録音中 ${pad2(secs / 60)}:${pad2(secs % 60)}` : '—';
+      return;
+    }
     const st = selected();
     const live = state.rx && ((st && st.status === 'talking') || state.recManual);
     el.recBtn.classList.toggle('live', !!live);
@@ -805,7 +1110,7 @@
   }
 
   function simTick() {
-    if (!state.rx) return;
+    if (!state.rx || isLive()) return;
     state.stations.forEach((st) => {
       if (st.sticky) return;   // ATIS など連続放送は状態を保つ
       if (st.status === 'talking') {
@@ -857,9 +1162,15 @@
     paintSelection();
     renderMonitor();
     if (!opts.silent) audio.init();
+    if (state.source === 'sdr') sdrTune('select');
+    if (state.source === 'ext' && !opts.silent) toast(`外部受信機モード：UV-K5本体を ${fmtHz(st.freq)} MHz に合わせてください`);
   }
 
   function tuneTo(freq, opts = {}) {
+    if (state.source === 'ext') {
+      if (opts.announce) toast('外部受信機モードでは、UV-K5本体のダイヤルで周波数を合わせてください');
+      return;
+    }
     freq = clamp(Math.round(freq * 10000) / 10000, state.range[0], state.range[1]);
     const near = state.stations.reduce((best, s) => {
       const d = Math.abs(s.freq - freq);
@@ -875,6 +1186,7 @@
     if (freq < state.center - state.span / 2 || freq > state.center + state.span / 2) { state.center = freq; state.centerAuto = true; }
     paintSelection();
     renderMonitor();
+    if (state.source === 'sdr') sdrTune('freq');
     if (opts.announce) toast(`${fmtHz(freq)} MHz：未登録周波数（ノイズのみ）`);
   }
 
@@ -903,6 +1215,11 @@
   }
 
   function toggleRec() {
+    if (isLive()) {
+      if (ext.rec) { try { ext.rec.stop(); } catch (e) { /* noop */ } }
+      else startRealRec();
+      return;
+    }
     const st = selected();
     if (!state.recManual) {
       state.recManual = true;
@@ -926,9 +1243,12 @@
     el.rxToggle.classList.toggle('is-off', !on);
     el.rxToggle.setAttribute('aria-pressed', String(on));
     document.body.classList.toggle('rx-off', !on);
+    if (state.source === 'sdr') sdrPause(!on);
+    if (ext.gain && ext.ctx) ext.gain.gain.setTargetAtTime(extMonitorGain(), ext.ctx.currentTime, 0.08);
+    liveKey = '';
     renderMonitor();
     updateDynamic();
-    toast(on ? '受信を再開しました' : '受信を停止しました（シミュレーション一時停止）');
+    toast(on ? '受信を再開しました' : '受信を停止しました（音声出力を止めます）');
   }
 
   /* ── スペクトラム ─────────────────────────────────────── */
@@ -982,6 +1302,9 @@
       const y = plotTop + plotH * i / 4;
       ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(CW, y); ctx.stroke();
     }
+
+    if (state.source === 'sdr') { drawSdrSpectrum(plotTop, plotBottom, plotH, t); return; }
+    if (state.source === 'ext') { drawExtSpectrum(plotTop, plotBottom, plotH, t); return; }
 
     // 波形の生成
     const stepPx = 2;
@@ -1113,6 +1436,189 @@
     }
   }
 
+  function drawIdleMessage(title, sub) {
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#7f93ab';
+    ctx.font = '600 12px -apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif';
+    ctx.fillText(title, CW / 2, CH / 2 - 6);
+    ctx.fillStyle = '#4f6076';
+    ctx.font = '10px -apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif';
+    ctx.fillText(sub, CW / 2, CH / 2 + 12);
+  }
+
+  function strokeSpectrum(pts, plotTop, plotBottom, plotH) {
+    const grad = ctx.createLinearGradient(0, plotTop, 0, plotBottom);
+    grad.addColorStop(0, 'rgba(86,158,235,.30)');
+    grad.addColorStop(.55, 'rgba(70,135,210,.16)');
+    grad.addColorStop(1, 'rgba(60,120,190,.02)');
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], plotBottom);
+    for (const [x, v] of pts) ctx.lineTo(x, v);
+    ctx.lineTo(CW, plotBottom);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    ctx.beginPath();
+    pts.forEach(([x, y], i) => { if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); });
+    ctx.strokeStyle = 'rgba(150,196,240,.92)';
+    ctx.lineWidth = 1.1;
+    ctx.shadowColor = 'rgba(90,160,240,.55)';
+    ctx.shadowBlur = 6;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+
+  function markTuned(plotTop, plotBottom, plotH, freqMHz, centerMHz, spanMHz, label) {
+    const sx = (freqMHz - (centerMHz - spanMHz / 2)) / spanMHz * CW;
+    if (!(sx > -20 && sx < CW + 20)) return;
+    const bandW = 26;
+    const bgrad = ctx.createLinearGradient(sx - bandW, 0, sx + bandW, 0);
+    bgrad.addColorStop(0, 'rgba(47,129,247,0)');
+    bgrad.addColorStop(.5, 'rgba(60,140,250,.17)');
+    bgrad.addColorStop(1, 'rgba(47,129,247,0)');
+    ctx.fillStyle = bgrad;
+    ctx.fillRect(sx - bandW, plotTop, bandW * 2, plotH);
+    ctx.strokeStyle = 'rgba(120,190,255,.85)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(sx + .5, plotTop);
+    ctx.lineTo(sx + .5, plotBottom);
+    ctx.stroke();
+    ctx.fillStyle = '#bfe0ff';
+    ctx.beginPath();
+    ctx.moveTo(sx, plotTop + 5);
+    ctx.lineTo(sx - 3.6, plotTop - 1);
+    ctx.lineTo(sx + 3.6, plotTop - 1);
+    ctx.closePath();
+    ctx.fill();
+    if (label) {
+      ctx.font = '9px ui-monospace,SFMono-Regular,Menlo,monospace';
+      ctx.fillStyle = '#9dc6ff';
+      ctx.textAlign = sx > CW - 60 ? 'right' : 'left';
+      ctx.fillText(label, Math.min(CW - 4, Math.max(4, sx + 7)), plotTop + 12);
+    }
+  }
+
+  /* 実機FFT（Mac側 bridge.py から受信した dB 配列） */
+  function drawSdrSpectrum(plotTop, plotBottom, plotH, t) {
+    const bins = sdr.fft;
+    if (!bins || !bins.length) {
+      drawIdleMessage(
+        sdr.status === 'open' ? 'FFTデータ待ち…' : 'RTL-SDR 未接続',
+        sdr.status === 'open' ? 'Mac 側 bridge.py からのデータを待っています' : '受信ソース → 接続ガイド で bridge.py を起動'
+      );
+      return;
+    }
+    const floor = sdr.dbFloor == null ? -120 : sdr.dbFloor;
+    const ceil = sdr.dbCeil == null ? -20 : sdr.dbCeil;
+    const n = bins.length;
+    const yFor = (db) => plotBottom - clamp((db - floor) / (ceil - floor), 0, 1) * plotH * 0.94;
+    const pts = [];
+    for (let x = 0; x <= CW; x += 2) {
+      const i = clamp(Math.round(x / CW * (n - 1)), 0, n - 1);
+      pts.push([x, yFor(bins[i])]);
+    }
+    strokeSpectrum(pts, plotTop, plotBottom, plotH);
+
+    const centerMHz = (sdr.centerHz ? sdr.centerHz : state.center * 1e6) / 1e6;
+    const spanMHz = (sdr.spanHz ? sdr.spanHz : state.span * 1e6) / 1e6;
+    drawMHzAxis(plotBottom, centerMHz, spanMHz);
+
+    // 中心の破線
+    ctx.save();
+    ctx.setLineDash([2, 4]);
+    ctx.strokeStyle = 'rgba(110,145,185,.28)';
+    ctx.beginPath(); ctx.moveTo(CW / 2, plotTop); ctx.lineTo(CW / 2, plotBottom); ctx.stroke();
+    ctx.restore();
+
+    // 選択周波数（実機の同調点）
+    markTuned(plotTop, plotBottom, plotH, shownFreq(), centerMHz, spanMHz, 'TX/RX');
+
+    // 左下の小さな表示
+    ctx.font = '9px ui-monospace,SFMono-Regular,Menlo,monospace';
+    ctx.fillStyle = '#6f8cab';
+    ctx.textAlign = 'left';
+    ctx.fillText(`RTL-SDR ${sdr.mode === 'am' ? 'AM' : 'FM'}  ${fmtMHz(shownFreq())} MHz`, 6, plotTop + 12);
+  }
+
+  function drawMHzAxis(plotBottom, centerMHz, spanMHz) {
+    const lo = centerMHz - spanMHz / 2, hi = centerMHz + spanMHz / 2;
+    ctx.font = '9.5px ui-monospace, SFMono-Regular, Menlo, monospace';
+    ctx.fillStyle = '#5f7085';
+    ctx.textAlign = 'center';
+    const tickStep = spanMHz <= 0.5 ? 0.05 : spanMHz <= 1 ? 0.1 : spanMHz <= 2.5 ? 0.4 : spanMHz <= 6 ? 1 : 2;
+    for (let f = Math.ceil(lo / tickStep) * tickStep; f < hi; f += tickStep) {
+      const x = (f - lo) / spanMHz * CW;
+      if (x < 16 || x > CW - 16) continue;
+      if (Math.abs(x - CW / 2) < 22) continue;
+      ctx.fillRect(x - .5, plotBottom + 1, 1, 3);
+      ctx.fillText(tickStep < 0.1 ? f.toFixed(2) : f.toFixed(1), x, plotBottom + 22);
+    }
+    if (CW / 2 > 26 && CW / 2 < CW - 26) {
+      ctx.fillStyle = '#9db0c6';
+      ctx.fillText(centerMHz.toFixed(2), CW / 2, plotBottom + 22);
+    }
+  }
+
+  /* 外部受信機（マイク／ライン入力）のリアルタイム表示 */
+  function drawExtSpectrum(plotTop, plotBottom, plotH, t) {
+    if (!ext.analyser) {
+      drawIdleMessage(
+        ext.stream ? '入力レベルの取得中…' : '外部受信機 入力停止',
+        ext.stream ? 'まもなく表示します' : '受信ソース → 外部受信機 → 入力を開始'
+      );
+      return;
+    }
+    const n = ext.analyser.frequencyBinCount;
+    const data = ext.freq || (ext.freq = new Uint8Array(n));
+    ext.analyser.getByteFrequencyData(data);
+    const nyq = ext.rate ? ext.rate / 2 : 24000;
+    const maxHz = Math.min(8000, nyq);
+    const used = Math.max(2, Math.round(maxHz / nyq * n));
+
+    const pts = [];
+    for (let i = 0; i < used; i++) {
+      const x = i / (used - 1) * CW;
+      const v = Math.pow(data[i] / 255, 1.2);
+      pts.push([x, plotBottom - clamp(v, 0, 1) * plotH * 0.9]);
+    }
+    // 平滑化
+    for (let k = 1; k < pts.length - 1; k++) pts[k][1] = (pts[k - 1][1] + pts[k][1] * 2 + pts[k + 1][1]) / 4;
+    strokeSpectrum(pts, plotTop, plotBottom, plotH);
+
+    // 波形（上段の細いストリップ）
+    const td = ext.time || (ext.time = new Float32Array(ext.analyser.fftSize));
+    ext.analyser.getFloatTimeDomainData(td);
+    const mid = plotTop + 16;
+    ctx.beginPath();
+    for (let i = 0; i < td.length; i += 2) {
+      const x = i / (td.length - 1) * CW;
+      const y = mid - clamp(td[i], -1, 1) * 13;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = 'rgba(120,215,255,.7)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // kHz 軸
+    ctx.font = '9.5px ui-monospace, SFMono-Regular, Menlo, monospace';
+    ctx.fillStyle = '#5f7085';
+    ctx.textAlign = 'center';
+    for (let khz = 0; khz <= maxHz / 1000; khz += 1) {
+      const x = khz * 1000 / maxHz * CW;
+      if (x < 14 || x > CW - 14) continue;
+      ctx.fillRect(x - .5, plotBottom + 1, 1, 3);
+      ctx.fillText(String(khz), x, plotBottom + 22);
+    }
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#6f8cab';
+    ctx.font = '9px ui-monospace, SFMono-Regular, Menlo, monospace';
+    ctx.fillText(`AUDIO IN  ${(ext.rate / 1000).toFixed(1)} kS/s  ${state.level.toFixed(1)} dBFS`, 6, plotBottom + 22);
+    ctx.textAlign = 'right';
+    ctx.fillText('kHz', CW - 6, plotBottom + 22);
+  }
+
   let raf = 0;
   function loop(ts) {
     drawSpectrum(ts / 1000);
@@ -1122,6 +1628,7 @@
   /* ── 音声デモ ─────────────────────────────────────────── */
   const audio = {
     ctx: null, master: null, voice: null, rumble: null, ready: false,
+    live: { node: null, gain: null, dest: null, recStream: null, ring: null, wp: 0, rp: 0, rate: 24000 },
     init() {
       if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; }
       const AC = window.AudioContext || window.webkitAudioContext;
@@ -1157,7 +1664,7 @@
       } catch (e) { /* 音声が使えない環境では無音で動作 */ }
     },
     gainValue() {
-      if (!state.audio) return 0;
+      if (!state.audio || state.latMuted) return 0;
       return state.muted ? 0 : (state.volume / 100) * 0.38;
     },
     apply() {
@@ -1165,8 +1672,70 @@
       const v = this.gainValue();
       this.master.gain.setTargetAtTime(v, this.ctx.currentTime, 0.05);
     },
+    liveGainValue() {
+      if (state.muted) return 0;
+      return (state.volume / 100) * 0.85;
+    },
+    applyLive() {
+      if (!this.ctx || !this.live.gain) return;
+      this.live.gain.gain.setTargetAtTime(this.liveGainValue(), this.ctx.currentTime, 0.05);
+    },
+    /* 実機PCM（Int16LE モノラル）をリングバッファに積み、ScriptProcessorで再生 */
+    ensureLive(rate) {
+      if (!this.ctx) this.init();
+      if (!this.ctx) return false;
+      if (this.live.node) return true;
+      const ac = this.ctx;
+      const r = rate && rate > 8000 ? rate : 24000;
+      this.live.rate = r;
+      const n = Math.max(8192, Math.round(r * 2));
+      this.live.ring = new Float32Array(n);
+      this.live.wp = 0; this.live.rp = 0;
+      const node = ac.createScriptProcessor ? ac.createScriptProcessor(2048, 1, 1) : ac.createJavaScriptNode(2048, 1, 1);
+      node.onaudioprocess = (e) => {
+        const out = e.outputBuffer.getChannelData(0);
+        const L = this.live;
+        const N = L.ring.length;
+        const ratio = L.rate / ac.sampleRate;
+        let avail = (L.wp - L.rp + N) % N;
+        for (let i = 0; i < out.length; i++) {
+          if (avail <= 1) { out[i] = 0; continue; }
+          const i0 = Math.floor(L.rp) % N;
+          const i1 = (i0 + 1) % N;
+          const f = L.rp - Math.floor(L.rp);
+          out[i] = L.ring[i0] * (1 - f) + L.ring[i1] * f;
+          L.rp = (L.rp + ratio) % N;
+          avail -= ratio;
+        }
+      };
+      const g = ac.createGain();
+      g.gain.value = this.liveGainValue();
+      let dest = null;
+      try { dest = ac.createMediaStreamDestination ? ac.createMediaStreamDestination() : null; } catch (err) { dest = null; }
+      node.connect(g);
+      g.connect(ac.destination);
+      if (dest) g.connect(dest);
+      this.live.node = node; this.live.gain = g; this.live.dest = dest;
+      this.live.recStream = dest ? dest.stream : null;
+      return true;
+    },
+    pushPcm(int16, rate) {
+      if (!this.ensureLive(rate)) return;
+      const L = this.live;
+      const N = L.ring.length;
+      for (let i = 0; i < int16.length; i++) {
+        L.ring[L.wp] = int16[i] / 32768;
+        L.wp = (L.wp + 1) % N;
+        if (L.wp === Math.floor(L.rp) % N) L.rp = (L.rp + 1) % N;
+      }
+    },
     tick() {
       if (!this.ready || !this.ctx) return;
+      if (isLive()) {
+        this.voice.gain.setTargetAtTime(0, this.ctx.currentTime, 0.06);
+        this.rumble.gain.setTargetAtTime(0, this.ctx.currentTime, 0.1);
+        return;
+      }
       const st = selected();
       const gate = state.rx && state.audio && !state.muted;
       const talking = st && st.status === 'talking';
@@ -1191,20 +1760,627 @@
     }
   };
 
+  /* ── 実機音声（外部受信機・RTL-SDR）の共有状態 ─────────── */
+  const sdr = {
+    url: state.wsUrl, ws: null, status: 'idle',
+    hello: null, fft: null, fftHz: 0, fftCount: 0, lastFftAt: 0, lastMsgAt: 0,
+    freqHz: null, mode: 'am', spanHz: null, centerHz: null, displayRate: null,
+    signalDbfs: null, snrDb: null, squelchOpen: false, sampleRate: 24000,
+    dbFloor: -120, dbCeil: -20, pcmCount: 0, pcmRate: 0, pcmTotal: 0, lastTune: null
+  };
+
+  const ext = {
+    stream: null, ctx: null, src: null, analyser: null, gain: null,
+    monitor: false, level: -120, peak: -120, rate: 0, label: '',
+    freq: null, time: null, rec: null, chunks: [], mime: '', recStart: 0
+  };
+
+  const escapeHtml = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  /* 音声入力の技術的なラベルは表示しない（MediaStreamAudioDestinationNode 等） */
+  function cleanLabel(s) {
+    if (!s) return '';
+    if (/MediaStream|WebAudio|AudioDestination|Fake|Default Audio Input|Unknown/i.test(s)) return '';
+    return String(s).slice(0, 40);
+  }
+
+  function shownFreq() {
+    if (state.source === 'sdr' && sdr.freqHz) return sdr.freqHz / 1e6;
+    return state.tuned;
+  }
+
+  function monSubText(st) {
+    if (state.source === 'sdr') {
+      const dev = (sdr.hello && sdr.hello.device) || 'RTL-SDR';
+      const md = sdr.mode === 'am' ? 'AM' : 'FM';
+      const sp = sdr.spanHz ? `・${(sdr.spanHz / 1e6).toFixed(3)} MHz` : '';
+      return `${dev}・${md}${sp}・${sdrHost()}`;
+    }
+    if (state.source === 'ext') {
+      return `${ext.label || '音声入力'}・${ext.rate ? (ext.rate / 1000).toFixed(1) + ' kHz' : '—'}・${ext.monitor ? 'モニタリングON' : 'モニタリングOFF'}・周波数はUV-K5本体で同調`;
+    }
+    return st
+      ? (st.role ? `${st.name}・${st.role}`
+        : state.stdMode === 'アナログFM' ? `[組織名 ${st.org}]・${st.dir || ''}`
+        : `[組織名 ${st.org}]・${st.dir}・CC ${st.cc}`)
+      : '未登録周波数・ノイズのみ';
+  }
+
+  /* ── 受信ソース ───────────────────────────────────────── */
+  function updateSourceBadge() {
+    if (!el.sourceBadge) return;
+    let text = SRC_BADGE.demo;
+    let cls = 'badge demo';
+    if (state.source === 'sdr') {
+      cls = 'badge ' + (sdr.status === 'open' ? 'live' : 'off');
+      text = sdr.status === 'open'
+        ? `RTL-SDR 接続中・${sdrHost()}${sdr.hello && sdr.hello.device ? '・' + sdr.hello.device : ''}`
+        : sdr.status === 'connecting' ? 'RTL-SDR 接続中…'
+        : 'RTL-SDR 未接続（bridge.py を起動してください）';
+    } else if (state.source === 'ext') {
+      cls = 'badge ' + (ext.stream ? 'live' : 'off');
+      text = ext.stream ? `外部受信機 入力中・${ext.label || '既定の入力'}` : '外部受信機 停止（「入力を開始」）';
+    }
+    el.sourceBadge.className = cls;
+    el.sourceBadge.textContent = text;
+  }
+
+  function updateSourceUI() {
+    if (el.srcName) el.srcName.textContent = SRC_NAME[state.source];
+    if (el.presetBadge) {
+      el.presetBadge.textContent = state.source === 'demo' ? 'デモ表示' : state.source === 'sdr' ? 'RTL-SDR' : '外部入力';
+      el.presetBadge.className = 'badge ' + (state.source === 'demo' ? 'demo' : 'live');
+    }
+    if (el.presetNote && state.presetObj) el.presetNote.innerHTML = presNoteHtml(state.presetObj);
+    if (el.srcDot) {
+      const cls = state.source === 'demo' ? 'demo'
+        : state.source === 'sdr' ? (sdr.status === 'open' ? 'sdr' : sdr.status === 'connecting' ? 'sdr warn' : 'sdr err')
+        : (ext.stream ? 'ext' : 'ext off');
+      el.srcDot.className = 'src-dot ' + cls;
+    }
+    if (el.setSourceVal) el.setSourceVal.textContent = SRC_NAME[state.source];
+    document.body.dataset.source = state.source;
+    updateSourcePanels();
+    updateSourceBadge();
+    if (el.specHint) {
+      el.specHint.textContent = state.source === 'sdr'
+        ? 'クリックで実機を同調・ドラッグで表示帯域移動'
+        : state.source === 'ext' ? 'UV-K5本体のダイヤルで周波数を合わせてください'
+        : 'ドラッグで帯域を移動・クリックで聴く・ホイールで1ステップ';
+    }
+  }
+
+  function updateSourcePanels() {
+    if (el.sdrPanel) el.sdrPanel.hidden = state.source !== 'sdr';
+    if (el.extPanel) el.extPanel.hidden = state.source !== 'ext';
+    $$('.src-opt').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.source === state.source)));
+    const setState = (src, txt, cls) => {
+      const s = document.querySelector(`.src-state[data-state="${src}"]`);
+      if (s) { s.textContent = txt; s.className = 'src-state' + (cls ? ' ' + cls : ''); }
+    };
+    setState('demo', state.source === 'demo' ? '使用中' : '—', state.source === 'demo' ? 'on' : '');
+    setState('sdr',
+      sdr.status === 'open' ? '接続中' : sdr.status === 'connecting' ? '接続中…' : sdr.status === 'error' ? 'エラー' : '未接続',
+      sdr.status === 'open' ? 'on' : sdr.status === 'error' ? 'err' : '');
+    setState('ext', ext.stream ? '入力中' : '停止', ext.stream ? 'on' : '');
+  }
+
+  function setSource(src, opts = {}) {
+    if (!['demo', 'sdr', 'ext'].includes(src)) return;
+    if (src === state.source && !opts.force) { openModal('sourceModal'); return; }
+    if (state.source === 'ext' && src !== 'ext') extStop(true);
+    if (state.source === 'sdr' && src !== 'sdr') sdrDisconnect(true);
+    state.source = src;
+    liveKey = '';
+    if (src === 'demo') applyPreset(state.preset, { silent: true });
+    else {
+      // 実機モードではデモの架空履歴を出さない（録音は残す）
+      const kept = state.history.filter((h) => h.url);
+      if (kept.length !== state.history.length) { state.history = kept; renderHistory(); }
+    }
+    updateSourceUI();
+    renderStations();
+    renderMonitor();
+    updateDynamic();
+    if (src === 'sdr') {
+      if (el.wsUrl) el.wsUrl.value = sdr.url;
+      sdrConnect();
+      if (!opts.silent) toast('Mac RTL-SDR 接続モードに切り替えました');
+    } else if (src === 'ext') {
+      extListDevices();
+      extStart();
+      if (!opts.silent) toast('外部受信機モードに切り替えました（マイク入力を許可してください）');
+    } else if (!opts.silent) {
+      toast('デモ表示に戻りました');
+      closeModals();
+    }
+    savePrefs();
+  }
+
+  /* ── Mac RTL-SDR（WebSocket）─────────────────────────── */
+  function sdrHost() {
+    try { return new URL(sdr.url).host; } catch (e) { return sdr.url; }
+  }
+
+  function sdrSetStatus(st) {
+    sdr.status = st;
+    const map = { idle: '未接続', connecting: '接続中…', open: '接続済み', closed: '切断', error: '接続エラー' };
+    if (el.wsStateVal) {
+      el.wsStateVal.textContent = map[st] || st;
+      el.wsStateVal.style.color = st === 'open' ? '#8ff0c4' : st === 'error' ? '#f6a3a3' : '';
+    }
+    if (st !== 'open') {
+      sdr.fft = null; sdr.signalDbfs = null; sdr.squelchOpen = false;
+    }
+    updateSourceUI();
+    liveKey = '';
+    renderMonitor();
+  }
+
+  function sdrSetUrl(v) {
+    const url = String(v || '').trim();
+    if (!/^wss?:\/\/[\w.:\-\[\]\/]+$/i.test(url)) { toast('ws:// または wss:// で始まるURLを入力してください'); return false; }
+    sdr.url = url; state.wsUrl = url; savePrefs();
+    return true;
+  }
+
+  function sdrConnect() {
+    if (el.wsUrl && !sdrSetUrl(el.wsUrl.value)) return;
+    if (sdr.ws && (sdr.ws.readyState === 0 || sdr.ws.readyState === 1)) {
+      if (sdr.ws.readyState === 1) sdrTune('reconnect');
+      return;
+    }
+    sdrSetStatus('connecting');
+    let ws;
+    try { ws = new WebSocket(sdr.url); } catch (e) { sdrSetStatus('error'); toast('WebSocket URL が不正です'); return; }
+    sdr.ws = ws;
+    ws.binaryType = 'arraybuffer';
+    ws.onopen = () => {
+      sdrSetStatus('open');
+      sdrTune('open');
+      audio.init();
+      toast(`RTL-SDR に接続しました（${sdrHost()}）`);
+    };
+    ws.onerror = () => {
+      if (sdr.status !== 'open') {
+        sdrSetStatus('error');
+        toast('接続できません。Mac で start_airscope_sdr.sh が動いているか確認してください');
+      }
+    };
+    ws.onclose = () => {
+      const wasOpen = sdr.status === 'open';
+      sdr.ws = null;
+      if (sdr.status !== 'idle') sdrSetStatus(wasOpen ? 'closed' : 'error');
+    };
+    ws.onmessage = (ev) => sdrOnMessage(ev.data);
+  }
+
+  function sdrDisconnect(silent) {
+    if (sdr.ws) { try { sdr.ws.close(); } catch (e) { /* noop */ } sdr.ws = null; }
+    sdr.hello = null; sdr.fft = null; sdr.signalDbfs = null; sdr.squelchOpen = false; sdr.freqHz = null;
+    sdrSetStatus('idle');
+    if (!silent) toast('RTL-SDR から切断しました');
+  }
+
+  function sdrOnMessage(data) {
+    sdr.lastMsgAt = Date.now();
+    if (typeof data === 'string') {
+      let msg;
+      try { msg = JSON.parse(data); } catch (e) { return; }
+      sdrHandleJson(msg);
+      return;
+    }
+    if (data instanceof ArrayBuffer && data.byteLength >= 2) {
+      const even = data.byteLength - (data.byteLength % 2);
+      audio.pushPcm(new Int16Array(data, 0, even / 2), sdr.sampleRate);
+      sdr.pcmCount += even;
+      sdr.pcmTotal += even;
+    }
+  }
+
+  function sdrHandleJson(msg) {
+    if (!msg || typeof msg !== 'object') return;
+    switch (msg.type) {
+      case 'hello':
+        sdr.hello = msg;
+        if (msg.sample_rate) sdr.sampleRate = msg.sample_rate;
+        if (msg.span_hz) { sdr.spanHz = msg.span_hz; state.span = msg.span_hz / 1e6; }
+        if (msg.display_rate) sdr.displayRate = msg.display_rate;
+        if (el.wsDeviceVal) el.wsDeviceVal.textContent = msg.device || msg.name || 'RTL-SDR';
+        break;
+      case 'fft': {
+        const db = msg.db || msg.bins || msg.data;
+        if (!db || !db.length) return;
+        sdr.fft = db;
+        sdr.fftCount += 1;
+        sdr.lastFftAt = Date.now();
+        if (msg.span_hz) { sdr.spanHz = msg.span_hz; state.span = msg.span_hz / 1e6; }
+        if (msg.center_hz) { sdr.centerHz = msg.center_hz; state.center = msg.center_hz / 1e6; state.centerAuto = true; }
+        if (typeof msg.db_floor === 'number') sdr.dbFloor = msg.db_floor;
+        if (typeof msg.db_ceil === 'number') sdr.dbCeil = msg.db_ceil;
+        renderSpanInfo();
+        break;
+      }
+      case 'status':
+        if (msg.freq_hz) sdr.freqHz = msg.freq_hz;
+        if (msg.mode) sdr.mode = msg.mode === 'am' ? 'am' : 'fm';
+        if (typeof msg.signal_dbfs === 'number') sdr.signalDbfs = msg.signal_dbfs;
+        if (typeof msg.snr_db === 'number') sdr.snrDb = msg.snr_db;
+        if (typeof msg.squelch_open === 'boolean') sdr.squelchOpen = msg.squelch_open;
+        if (msg.sample_rate) sdr.sampleRate = msg.sample_rate;
+        if (msg.span_hz) { sdr.spanHz = msg.span_hz; state.span = msg.span_hz / 1e6; }
+        if (msg.center_hz) { sdr.centerHz = msg.center_hz; state.center = msg.center_hz / 1e6; }
+        liveKey = '';
+        break;
+      case 'error':
+        toast(`SDR bridge: ${msg.message || 'エラー'}`);
+        break;
+      default:
+        break;
+    }
+  }
+
+  function currentDemod() {
+    if (state.stdMode === 'AM (エアバンド)') return 'am';
+    if (state.stdMode === 'アナログFM') return 'fm';
+    if (state.stdMode === 'auto') return state.mod === 'AM' ? 'am' : 'fm';
+    return 'fm';   // TDMA / DMR / NXDN はアナログ復調では聞こえないが、FM として扱う
+  }
+
+  function sdrTune() {
+    if (!sdr.ws || sdr.ws.readyState !== 1) return false;
+    const mode = currentDemod();
+    const msg = {
+      cmd: 'tune',
+      freq_hz: Math.round(state.tuned * 1e6),
+      mode,
+      bandwidth_hz: mode === 'am' ? 8000 : 12500,
+      squelch_dbfs: state.squelch
+    };
+    try { sdr.ws.send(JSON.stringify(msg)); } catch (e) { return false; }
+    sdr.lastTune = msg;
+    if (el.wsTuneVal) el.wsTuneVal.textContent = `${fmtMHz(msg.freq_hz / 1e6)} MHz ${mode.toUpperCase()}`;
+    return true;
+  }
+
+  function sdrSquelch() {
+    if (!sdr.ws || sdr.ws.readyState !== 1) return;
+    try { sdr.ws.send(JSON.stringify({ cmd: 'squelch', squelch_dbfs: state.squelch })); } catch (e) { /* noop */ }
+  }
+
+  function sdrPause(paused) {
+    if (!sdr.ws || sdr.ws.readyState !== 1) return;
+    try { sdr.ws.send(JSON.stringify({ cmd: 'pause', pause: !!paused })); } catch (e) { /* noop */ }
+  }
+
+  /* 1秒ごとの実機レート表示 */
+  setInterval(() => {
+    if (state.source !== 'sdr') return;
+    sdr.fftHz = sdr.fftCount; sdr.fftCount = 0;
+    sdr.pcmRate = sdr.pcmCount; sdr.pcmCount = 0;
+    if (el.wsFftVal) el.wsFftVal.textContent = sdr.status === 'open' ? `${sdr.fftHz} Hz` : '—';
+    if (el.wsPcmVal) el.wsPcmVal.textContent = sdr.status === 'open' ? `${(sdr.pcmRate / 1024).toFixed(1)} KB/s` : '—';
+    if (el.wsLastVal) el.wsLastVal.textContent = sdr.lastMsgAt ? new Date(sdr.lastMsgAt).toLocaleTimeString('ja-JP', { hour12: false }) : '—';
+  }, 1000);
+
+  /* ── 外部受信機（マイク／ライン入力）────────────────── */
+  function extListDevices() {
+    if (!el.extDevice || !navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+    navigator.mediaDevices.enumerateDevices().then((devs) => {
+      const inputs = devs.filter((d) => d.kind === 'audioinput');
+      const current = el.extDevice.value || state.extDevice;
+      el.extDevice.innerHTML = '<option value="">既定の入力</option>' + inputs.map((d, i) =>
+        `<option value="${escapeHtml(d.deviceId)}">${escapeHtml(d.label || '音声入力 ' + (i + 1))}</option>`).join('');
+      if (current && inputs.some((d) => d.deviceId === current)) el.extDevice.value = current;
+    }).catch(() => { /* noop */ });
+  }
+
+  function extMonitorGain() {
+    if (!ext.monitor || state.muted || !state.rx) return 0;
+    return (state.volume / 100) * 0.8;
+  }
+
+  function extSetMonitor(on) {
+    ext.monitor = !!on;
+    if (el.extMonToggle) el.extMonToggle.checked = ext.monitor;
+    if (ext.gain && ext.ctx) ext.gain.gain.setTargetAtTime(extMonitorGain(), ext.ctx.currentTime, 0.06);
+    if (el.extHowl) el.extHowl.hidden = !(ext.monitor && ext.stream);
+    liveKey = '';
+    savePrefs();
+    if (ext.monitor) toast('モニタリングON（ハウリングに注意）');
+  }
+
+  async function extStart() {
+    if (ext.stream) {
+      if (audio.ctx && audio.ctx.state === 'suspended') { try { await audio.ctx.resume(); } catch (e) { /* noop */ } }
+      return;
+    }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      toast('このブラウザはマイク入力をサポートしていません');
+      return;
+    }
+    audio.init();
+    const devId = (el.extDevice && el.extDevice.value) || state.extDevice || '';
+    const constraints = {
+      audio: {
+        echoCancellation: false,
+        noiseSuppression: false,
+        autoGainControl: false,
+        channelCount: 1,
+        ...(devId ? { deviceId: { exact: devId } } : {})
+      },
+      video: false
+    };
+    if (el.extStateVal) el.extStateVal.textContent = '接続中…';
+    try {
+      ext.stream = await navigator.mediaDevices.getUserMedia(constraints);
+    } catch (e) {
+      let msg = 'マイク入力を取得できませんでした';
+      if (e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')) msg = 'マイク入力を許可してください（ブラウザの設定）';
+      else if (e && e.name === 'NotFoundError') msg = '利用できる音声入力が見つかりません（UV-K5 の接続を確認）';
+      else if (e && e.name === 'NotReadableError') msg = '他のアプリが音声入力を使用しています';
+      toast(msg);
+      if (el.extStateVal) el.extStateVal.textContent = '未許可';
+      updateSourceUI();
+      return;
+    }
+    const ac = audio.ctx;
+    if (!ac) { toast('Web Audio を初期化できませんでした'); extStop(true); return; }
+    if (ac.state === 'suspended') { try { await ac.resume(); } catch (e) { /* noop */ } }
+    ext.ctx = ac;
+    ext.src = ac.createMediaStreamSource(ext.stream);
+    ext.analyser = ac.createAnalyser();
+    ext.analyser.fftSize = 2048;
+    ext.analyser.smoothingTimeConstant = 0.72;
+    ext.gain = ac.createGain();
+    ext.gain.gain.value = extMonitorGain();
+    ext.src.connect(ext.analyser);
+    ext.src.connect(ext.gain);
+    ext.gain.connect(ac.destination);
+    // アナライザーを音声グラフに接続したままにする（無音のパススルー）
+    const probe = ac.createGain();
+    probe.gain.value = 0;
+    ext.analyser.connect(probe);
+    probe.connect(ac.destination);
+    ext.probe = probe;
+    const track = ext.stream.getAudioTracks()[0];
+    const s = track && track.getSettings ? track.getSettings() : {};
+    ext.rate = s.sampleRate || ac.sampleRate || 48000;
+    ext.label = cleanLabel(track && track.label) || '外部受信機';
+    if (el.extRateVal) el.extRateVal.textContent = `${(ext.rate / 1000).toFixed(1)} kHz`;
+    if (el.extStateVal) el.extStateVal.textContent = '入力中';
+    if (el.extHowl) el.extHowl.hidden = !ext.monitor;
+    updateSourceUI();
+    renderMonitor();
+    extListDevices();
+    toast(`音声入力を開始しました（${ext.label}）`);
+  }
+
+  function extStop(silent) {
+    if (ext.rec) { try { ext.rec.stop(); } catch (e) { /* noop */ } }
+    if (ext.stream) ext.stream.getTracks().forEach((t) => { try { t.stop(); } catch (e) { /* noop */ } });
+    if (ext.src) { try { ext.src.disconnect(); } catch (e) { /* noop */ } }
+    if (ext.gain) { try { ext.gain.disconnect(); } catch (e) { /* noop */ } }
+    ext.stream = null; ext.src = null; ext.analyser = null; ext.gain = null;
+    ext.level = -120; ext.peak = -120;
+    if (el.extStateVal) el.extStateVal.textContent = '停止';
+    if (el.extLevelVal) el.extLevelVal.textContent = '—';
+    if (el.extHowl) el.extHowl.hidden = true;
+    updateSourceUI();
+    if (!silent) { toast('音声入力を停止しました'); renderMonitor(); updateDynamic(); }
+  }
+
+  /* ── 実音声の録音（MediaRecorder）────────────────────── */
+  function startRealRec() {
+    const stream = state.source === 'ext' ? ext.stream : (audio.live.recStream || null);
+    if (!stream) {
+      toast(state.source === 'ext' ? '先に「入力を開始」で音声を取り込んでください' : 'RTL-SDR の音声がまだ届いていません');
+      return;
+    }
+    if (typeof MediaRecorder === 'undefined') { toast('このブラウザは録音に対応していません'); return; }
+    let mime = '';
+    ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'].forEach((c) => {
+      if (!mime && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(c)) mime = c;
+    });
+    let rec;
+    try {
+      rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+    } catch (e) { toast('録音を開始できませんでした'); return; }
+    ext.rec = rec;
+    ext.chunks = [];
+    ext.mime = rec.mimeType || mime || 'audio/webm';
+    ext.recStart = Date.now();
+    rec.ondataavailable = (e) => { if (e.data && e.data.size) ext.chunks.push(e.data); };
+    rec.onstop = () => finishRealRec();
+    try { rec.start(500); } catch (e) { toast('録音を開始できませんでした'); ext.rec = null; return; }
+    updateRecUI();
+    toast('録音を開始しました（履歴から再生・保存できます）');
+  }
+
+  function finishRealRec() {
+    const dur = Math.max(1, Math.round((Date.now() - ext.recStart) / 1000));
+    const type = ext.mime || 'audio/webm';
+    const blob = new Blob(ext.chunks, { type });
+    ext.chunks = [];
+    ext.rec = null;
+    if (!blob.size) { toast('録音データが空でした'); updateRecUI(); return; }
+    const d = new Date();
+    const stamp = `${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}_${pad2(d.getHours())}${pad2(d.getMinutes())}${pad2(d.getSeconds())}`;
+    const extName = type.indexOf('mp4') >= 0 ? 'm4a' : type.indexOf('ogg') >= 0 ? 'ogg' : 'webm';
+    const filename = `airscope_${stamp}_${Math.round(state.tuned * 1000)}kHz.${extName}`;
+    const url = URL.createObjectURL(blob);
+    state.history.unshift({
+      at: Date.now(), freq: state.tuned,
+      org: state.source === 'sdr' ? 'RTL-SDR' : (ext.label || '外部受信機'),
+      kind: '録音', dur, id: 0, url, filename, mime: type
+    });
+    if (state.history.length > 60) {
+      const rm = state.history.pop();
+      if (rm.url) URL.revokeObjectURL(rm.url);
+    }
+    renderHistory();
+    updateRecUI();
+    toast(`録音を保存しました（${Math.floor(dur / 60)}:${pad2(dur % 60)}・${Math.round(blob.size / 1024)}KB）`);
+  }
+
+  let histAudio = null, histIdx = -1;
+  function stopHistAudio() {
+    if (histAudio) { try { histAudio.pause(); } catch (e) { /* noop */ } histAudio = null; }
+    histIdx = -1;
+    if (el.histBody) $$('.play[data-hist]', el.histBody).forEach((b) => { b.textContent = '▶'; });
+  }
+  function playHistory(i) {
+    const h = state.history[i];
+    if (!h) return;
+    if (!h.url) { audio.init(); audio.beep(); toast('録音を再生（デモ音）'); return; }
+    if (histIdx === i && histAudio) { stopHistAudio(); toast('再生を停止しました'); return; }
+    stopHistAudio();
+    histAudio = new Audio(h.url);
+    histIdx = i;
+    histAudio.onended = () => stopHistAudio();
+    histAudio.play().then(() => {
+      const btn = el.histBody && el.histBody.querySelector(`.play[data-hist="${i}"]`);
+      if (btn) btn.textContent = '❚❚';
+      toast('録音を再生中');
+    }).catch(() => toast('この端末では再生できませんでした（保存して再生してください）'));
+  }
+
+  /* ── CHIRP-next 用 CSV ──────────────────────────────── */
+  function csvCell(v) {
+    const s = String(v == null ? '' : v);
+    return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+
+  function chirpRows(ids) {
+    const rows = [];
+    let loc = 0;
+    ids.forEach((id) => {
+      const p = PRESETS.find((x) => x.id === id);
+      const info = CHIRP_INFO[id];
+      if (!p || !info) return;
+      p.stations.forEach((st) => {
+        loc += 1;
+        rows.push([
+          String(loc),
+          (info.code + st.freq.toFixed(3)).slice(0, 10),
+          st.freq.toFixed(6),
+          'off',
+          '0.000000',
+          '',
+          '88.5',
+          '88.5',
+          '023',
+          'NN',
+          '023',
+          'Tone->Tone',
+          info.mode,
+          info.step,
+          '',
+          'Low',
+          `AirScope ${info.code} ${st.tag || ''} RX ONLY`,
+          '', '', '', ''
+        ]);
+      });
+    });
+    return rows;
+  }
+
+  function chirpCsv(ids) {
+    const list = ids && ids.length ? ids : CHIRP_SET_IDS;
+    return [CHIRP_HEADER.join(',')].concat(chirpRows(list).map((r) => r.map(csvCell).join(','))).join('\r\n') + '\r\n';
+  }
+
+  function downloadText(filename, text, mime) {
+    const blob = new Blob([text], { type: mime || 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  }
+
+  function exportChirp(ids) {
+    const list = (ids && ids.length ? ids : [state.preset]).filter((id) => CHIRP_INFO[id]);
+    const rows = chirpRows(list);
+    if (!rows.length) { toast('このプリセットには書き出せるチャンネルがありません（KIX/ITM/HND/NRT/FUK/南海/JR）'); return; }
+    const d = new Date();
+    const stamp = `${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}`;
+    const name = list.length > 1 ? `airscope_chirp_all_${stamp}.csv` : `airscope_chirp_${list[0]}_${stamp}.csv`;
+    downloadText(name, chirpCsv(list), 'text/csv;charset=utf-8');
+    toast(`CHIRP用CSVを保存しました（${rows.length}ch・受信専用 Duplex=off）`);
+  }
+
+  /* ── LiveATC ポップアップ ───────────────────────────── */
+  let latPoll = null;
+  function openLiveAtc(mount, icao) {
+    const url = LAT_PLAYER(mount, icao);
+    let w = null;
+    try {
+      w = window.open(url, 'liveatc_' + mount, 'width=820,height=640,menubar=no,toolbar=no,status=yes,location=yes');
+    } catch (e) { w = null; }
+    if (!w) {
+      try { w = window.open(url, '_blank', 'noopener'); } catch (e) { /* noop */ }
+      toast('ポップアップがブロックされたため、別タブで開きました');
+    } else {
+      toast('LiveATC の公式プレーヤーを開きました（デモ音をミュート）');
+    }
+    if (state.latMute && w) {
+      state.latMuted = true;
+      audio.init();
+      audio.apply();
+    }
+    clearInterval(latPoll);
+    if (w) {
+      latPoll = setInterval(() => {
+        if (w.closed) {
+          clearInterval(latPoll);
+          latPoll = null;
+          if (state.latMuted) { state.latMuted = false; audio.apply(); toast('デモ音のミュートを解除しました'); }
+        }
+      }, 1200);
+    }
+  }
+
+  /* ── クリップボード ─────────────────────────────────── */
+  function fallbackCopy(text) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      ta.remove();
+      return ok;
+    } catch (e) { return false; }
+  }
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).then(() => true).catch(() => fallbackCopy(text));
+    }
+    return Promise.resolve(fallbackCopy(text));
+  }
+
   /* ── 履歴 ─────────────────────────────────────────────── */
   function renderHistory() {
     const rows = state.history.map((h, i) => {
       const d = new Date(h.at);
       const time = `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
       const dur = `${Math.floor(h.dur / 60)}:${pad2(h.dur % 60)}`;
+      const cell = h.url
+        ? `<div class="play-cell"><button class="play" type="button" data-hist="${i}" aria-label="録音を再生">▶</button><a class="dl" href="${h.url}" download="${escapeHtml(h.filename || 'airscope_recording.webm')}" aria-label="録音を保存">⭳</a></div>`
+        : `<button class="play" type="button" data-hist="${i}" aria-label="再生（デモ音）">▶</button>`;
       return `<tr>
         <td class="mono">${time}</td>
         <td class="mono">${fmtHz(h.freq)}</td>
-        <td>[${h.org}]</td>
+        <td>[${escapeHtml(h.org)}]</td>
         <td class="${h.kind === '通話' ? 't-talking' : ''}">${h.kind}</td>
         <td class="mono">${dur}</td>
         <td class="mono">${h.id ? 'ID ' + h.id : '—'}</td>
-        <td><button class="play" type="button" data-hist="${i}" aria-label="再生（デモ）">▶</button></td>
+        <td>${cell}</td>
       </tr>`;
     }).join('');
     el.histBody.innerHTML = rows;
@@ -1240,7 +2416,7 @@
         speed: state.speed, squelch: state.squelch, audio: state.audio,
         volume: state.volume, muted: state.muted, stdMode: state.stdMode,
         stepMode: state.stepMode, autoScan: state.autoScan, autoFollow: state.autoFollow,
-        preset: state.preset
+        preset: state.preset, wsUrl: state.wsUrl, latMute: state.latMute, extDevice: state.extDevice
       }));
     } catch (e) { /* 保存できない環境では無視 */ }
   }
@@ -1258,6 +2434,9 @@
     if (typeof p.autoScan === 'boolean') state.autoScan = p.autoScan;
     if (typeof p.autoFollow === 'boolean') state.autoFollow = p.autoFollow;
     if (typeof p.preset === 'string' && PRESETS.some((x) => x.id === p.preset)) state.preset = p.preset;
+    if (typeof p.wsUrl === 'string' && /^wss?:\/\//i.test(p.wsUrl)) { state.wsUrl = p.wsUrl; sdr.url = p.wsUrl; }
+    if (typeof p.latMute === 'boolean') state.latMute = p.latMute;
+    if (typeof p.extDevice === 'string') state.extDevice = p.extDevice;
   }
 
   /* ── UI バインド ──────────────────────────────────────── */
@@ -1347,6 +2526,7 @@
     // 呼び出し
     $('#callBtn').addEventListener('click', () => {
       audio.init();
+      if (isLive()) { toast('実機モードは受信専用です（送信・呼び出しはしません）'); return; }
       if (state.mod !== 'TDMA') { toast('このプリセットは受信専用です（送信・呼び出しはしません）'); return; }
       if (!state.rx) { toast('受信停止中です。先に受信を開始してください'); return; }
       const st = selected();
@@ -1362,6 +2542,7 @@
       savePrefs();
       audio.init();
       audio.beep();
+      if (state.source === 'sdr') sdrTune('preset');
     });
 
     // ステップ
@@ -1378,17 +2559,23 @@
       renderMonitor();
       updateDynamic();
       savePrefs();
+      if (state.source === 'sdr') sdrTune('std');
       toast(`規格 ${state.stdMode === 'auto' ? '自動判定' : state.stdMode} を適用`);
     });
 
     // 履歴
     $('#historyBtn').addEventListener('click', () => openModal('historyModal'));
-    $('#histClear').addEventListener('click', () => { state.history = []; renderHistory(); toast('履歴をクリアしました'); });
+    $('#histClear').addEventListener('click', () => {
+      stopHistAudio();
+      state.history.forEach((h) => { if (h.url) URL.revokeObjectURL(h.url); });
+      state.history = [];
+      renderHistory();
+      toast('履歴をクリアしました');
+    });
     el.histBody.addEventListener('click', (e) => {
       const b = e.target.closest('[data-hist]');
       if (!b) return;
-      audio.init(); audio.beep();
-      toast('録音を再生（デモ音）');
+      playHistory(Number(b.dataset.hist));
     });
 
     // 設定
@@ -1408,6 +2595,7 @@
       el.muteBtn.setAttribute('aria-pressed', String(state.muted));
       el.muteIcon.setAttribute('href', state.muted ? '#i-mute' : '#i-speaker');
       audio.init(); audio.apply();
+      audio.applyLive();
       savePrefs();
       toast(state.muted ? 'ミュートしました' : 'ミュートを解除');
     });
@@ -1419,6 +2607,8 @@
         el.muteIcon.setAttribute('href', '#i-speaker');
       }
       audio.init(); audio.apply();
+      audio.applyLive();
+      if (ext.gain && ext.ctx) ext.gain.gain.setTargetAtTime(extMonitorGain(), ext.ctx.currentTime, 0.06);
       savePrefs();
     });
 
@@ -1440,6 +2630,7 @@
     el.sqRange.addEventListener('input', () => {
       state.squelch = Number(el.sqRange.value);
       applySquelch(); savePrefs();
+      if (state.source === 'sdr') sdrSquelch();
     });
     el.audioToggle.addEventListener('change', () => {
       state.audio = el.audioToggle.checked;
@@ -1455,6 +2646,40 @@
       toast('このプリセットを初期状態に戻しました');
       closeModals();
     });
+
+    /* ── 受信ソース ── */
+    const openSource = () => { openModal('sourceModal'); extListDevices(); updateSourcePanels(); };
+    el.sourceBtn.addEventListener('click', openSource);
+    el.setSourceBtn.addEventListener('click', openSource);
+    $$('.src-opt').forEach((b) => b.addEventListener('click', () => setSource(b.dataset.source)));
+    el.wsConnectBtn.addEventListener('click', () => sdrConnect());
+    el.wsDisconnectBtn.addEventListener('click', () => sdrDisconnect());
+    el.wsGuideBtn.addEventListener('click', () => openModal('sdrGuideModal'));
+    el.wsUrl.addEventListener('change', () => sdrSetUrl(el.wsUrl.value));
+    el.wsUrl.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); sdrConnect(); } });
+    el.extStartBtn.addEventListener('click', () => extStart());
+    el.extStopBtn.addEventListener('click', () => extStop());
+    el.extRefreshBtn.addEventListener('click', () => extListDevices());
+    el.extDevice.addEventListener('change', () => {
+      state.extDevice = el.extDevice.value;
+      savePrefs();
+      if (ext.stream) { extStop(true); extStart(); }
+    });
+    el.extMonToggle.addEventListener('change', () => extSetMonitor(el.extMonToggle.checked));
+    el.chirpBtn.addEventListener('click', () => exportChirp([state.preset]));
+    el.chirpCurBtn.addEventListener('click', () => exportChirp([state.preset]));
+    el.chirpAllBtn.addEventListener('click', () => exportChirp(CHIRP_SET_IDS));
+    el.latMuteToggle.addEventListener('change', () => { state.latMute = el.latMuteToggle.checked; savePrefs(); });
+    el.liveAtcBox.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-lat-mount]');
+      if (!b) return;
+      openLiveAtc(b.dataset.latMount, b.dataset.latIcao);
+    });
+    $$('[data-copy]').forEach((b) => b.addEventListener('click', () => {
+      const pre = document.getElementById(b.dataset.copy);
+      if (!pre) return;
+      copyText(pre.textContent).then((ok) => toast(ok ? 'コピーしました' : 'コピーできませんでした（手動で選択してください）'));
+    }));
 
     // キーボード
     document.addEventListener('keydown', (e) => {
@@ -1484,7 +2709,7 @@
     canvas.addEventListener('pointermove', (e) => {
       const rect = canvas.getBoundingClientRect();
       hoverX = e.clientX - rect.left;
-      if (!dragging) return;
+      if (!dragging || state.source === 'ext') return;
       const dx = e.clientX - dragStartX;
       if (Math.abs(dx) > 3) dragMoved = true;
       if (dragMoved) {
@@ -1497,6 +2722,7 @@
       if (!dragging) return;
       dragging = false;
       if (!dragMoved) {
+        if (state.source === 'ext') { toast('外部受信機モードでは、UV-K5本体のダイヤルで周波数を合わせてください'); return; }
         const rect = canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const f = xToF(x);
@@ -1509,6 +2735,7 @@
     canvas.addEventListener('pointerleave', () => { hoverX = -1; });
     canvas.addEventListener('wheel', (e) => {
       e.preventDefault();
+      if (state.source === 'ext') return;
       const dir = e.deltaY > 0 ? 1 : -1;
       state.center = clamp(state.center + dir * state.step, state.range[0], state.range[1]);
       state.centerAuto = false;
@@ -1530,9 +2757,12 @@
     el.muteIcon.setAttribute('href', state.muted ? '#i-mute' : '#i-speaker');
     $('#autoScan').checked = state.autoScan;
     $('#autoFollow').checked = state.autoFollow;
+    if (el.wsUrl) el.wsUrl.value = state.wsUrl;
+    if (el.latMuteToggle) el.latMuteToggle.checked = state.latMute;
     state.step = STEP_MAP[state.stepMode] || STEP_MAP.auto;
     applySpeed();
     applySquelch();
+    updateSourceUI();
   }
 
   function boot() {
@@ -1562,6 +2792,40 @@
 
     // 自動探索の初期カウントダウン
     state.stations.forEach((s) => { if (s.status === 'ended') s.rescan = 18; });
+
+    // 外部入力デバイスの一覧（許可なしでもデバイスIDのみ取得可能）
+    extListDevices();
+
+    // テスト・デバッグ用の読み取りAPI
+    window.AirScope = {
+      version: 'v15',
+      getState: () => ({
+        source: state.source, preset: state.preset, tuned: state.tuned, rx: state.rx,
+        latMuted: state.latMuted, latMute: state.latMute,
+        sdrStatus: sdr.status, sdrUrl: sdr.url, fftBins: sdr.fft ? sdr.fft.length : 0,
+        sdrFreqHz: sdr.freqHz, sdrSignal: sdr.signalDbfs, sdrSquelchOpen: sdr.squelchOpen,
+        sdrPcmTotal: sdr.pcmTotal, sdrFftHz: sdr.fftHz, sdrPcmRate: sdr.pcmRate,
+        lastTune: sdr.lastTune, extStream: !!ext.stream, extLevel: ext.level, extPeak: ext.peak,
+        extRate: ext.rate, extMonitor: ext.monitor, recording: !!ext.rec, extPeak: ext.peak,
+        audioCtx: audio.ctx ? audio.ctx.state : 'none',
+        history: state.history.map((h) => ({ freq: h.freq, kind: h.kind, dur: h.dur, hasAudio: !!h.url, mime: h.mime || '' })),
+        level: state.level
+      }),
+      chirpCsv: (ids) => chirpCsv(ids),
+      extProbe: () => {
+        if (!ext.analyser) return null;
+        const td = new Float32Array(ext.analyser.fftSize);
+        ext.analyser.getFloatTimeDomainData(td);
+        let peak = 0;
+        for (let i = 0; i < td.length; i++) peak = Math.max(peak, Math.abs(td[i]));
+        const tr = ext.stream && ext.stream.getAudioTracks()[0];
+        return {
+          peak, ctx: audio.ctx ? audio.ctx.state : 'none',
+          trackState: tr && tr.readyState, muted: tr && tr.muted, enabled: tr && tr.enabled,
+          label: tr && tr.label, anRate: audio.ctx && audio.ctx.sampleRate
+        };
+      }
+    };
   }
 
   if (document.readyState === 'loading') {

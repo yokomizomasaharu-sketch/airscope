@@ -16,7 +16,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="styles.css?v=13">
+<link rel="stylesheet" href="styles.css?v=15">
 </head>
 <body>
 <svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
@@ -54,6 +54,12 @@
     <svg class="logo" aria-hidden="true"><use href="#i-logo"/></svg>
     <span class="brand-name">AirScope</span>
   </div>
+
+  <button id="sourceBtn" class="src-btn" type="button" aria-haspopup="dialog" aria-controls="sourceModal" aria-label="受信ソースを切り替え">
+    <span id="srcDot" class="src-dot demo" aria-hidden="true"></span>
+    <span id="srcName" class="src-name">デモ</span>
+    <span class="src-caret" aria-hidden="true">▾</span>
+  </button>
 
   <div class="field">
     <label class="field-label" for="freqInput">周波数</label>
@@ -121,6 +127,7 @@
       </select>
       <p id="presetNote" class="preset-note"></p>
       <div id="liveAtcBox" class="liveatc-box" hidden></div>
+      <button id="chirpBtn" class="btn ghost chirp-btn" type="button" hidden>⭳ CHIRP用CSV（このプリセット＝受信専用）</button>
     </div>
 
     <div class="panel-head">
@@ -164,7 +171,7 @@
         <span class="m-label">規格</span>
         <span id="monStd" class="mon-std">STD-T79（自動判定）</span>
         <span id="monState" class="badge talking">通話中</span>
-        <span id="demoBadge" class="badge demo">デモ表示・実電波は受信していません</span>
+        <span id="sourceBadge" class="badge demo">デモ表示・実電波は受信していません</span>
         <button id="recBtn" class="rec" type="button" aria-pressed="false"><i class="rec-dot" aria-hidden="true"></i><span id="recText">録音中 00:14</span></button>
         <div class="vol">
           <button id="muteBtn" class="vol-btn" type="button" aria-label="ミュート" aria-pressed="false"><svg class="ico" aria-hidden="true"><use id="muteIcon" href="#i-speaker"/></svg></button>
@@ -236,7 +243,7 @@
     </div>
     <div class="modal-foot">
       <button id="histClear" class="btn ghost" type="button">履歴をクリア</button>
-      <span class="hint">デモのため音声そのものは保存されません</span>
+      <span class="hint">実音声の録音はこの端末内に保持され、再読み込みで消えます</span>
     </div>
   </div>
 </div>
@@ -248,6 +255,20 @@
       <button class="icon-btn" type="button" data-close aria-label="閉じる">✕</button>
     </div>
     <div class="modal-body">
+      <div class="set-row">
+        <div class="set-info"><div class="set-title">受信ソース</div><div class="set-desc">デモ表示／Mac RTL-SDR／外部受信機（UV-K5 等）</div></div>
+        <span id="setSourceVal" class="set-val">デモ</span>
+        <button id="setSourceBtn" class="btn ghost small" type="button">切替</button>
+      </div>
+      <div class="set-row">
+        <div class="set-info"><div class="set-title">CHIRP用CSV（UV-K5 取込用）</div><div class="set-desc">受信専用（Duplex=off・送信無効）で書き出します</div></div>
+        <button id="chirpCurBtn" class="btn ghost small" type="button">このプリセット</button>
+        <button id="chirpAllBtn" class="btn ghost small" type="button">全プリセット</button>
+      </div>
+      <div class="set-row">
+        <div class="set-info"><div class="set-title">LiveATCを開いたらデモ音をミュート</div><div class="set-desc">ポップアップを閉じると元に戻します</div></div>
+        <label class="switch"><input type="checkbox" id="latMuteToggle" checked><span class="track" aria-hidden="true"></span></label>
+      </div>
       <div class="set-row">
         <div class="set-info"><div class="set-title">デモ動作速度</div><div class="set-desc">通話の発生・終了の進み方</div></div>
         <input id="speedRange" class="range" type="range" min="0.5" max="3" step="0.5" value="1" aria-label="デモ動作速度">
@@ -263,11 +284,11 @@
         <label class="switch"><input type="checkbox" id="audioToggle" checked><span class="track" aria-hidden="true"></span></label>
       </div>
       <div class="notice">
-        <strong>これはデモ・シミュレーターです。</strong>
-        実際の電波を受信するものではなく、周波数・局・通話・スペクトラム・音声はすべてブラウザ内で生成した架空のデータです。SDR 機器やアンテナには接続していません。画面上の ID・組織名・信号値もすべてサンプルです。
+        <strong>デモモードはシミュレーターです。</strong>
+        デモモードでは実際の電波を受信せず、周波数・局・通話・スペクトラム・音声はすべてブラウザ内で生成した架空のデータです。SDR 機器やアンテナには接続していません。画面上の ID・組織名・信号値もすべてサンプルです。
       </div>
       <div class="notice subtle">
-        表示・挙動は端末内だけで完結し、外部への送信は行いません。設定はこの端末に保存されます。
+        「Mac RTL-SDR」「外部受信機」に切り替えたときだけ、この端末に接続した機器の実音声を端末内で処理します（外部への送信は行いません）。設定はこの端末に保存されます。
       </div>
     </div>
     <div class="modal-foot">
@@ -277,8 +298,126 @@
   </div>
 </div>
 
+<div id="sourceModal" class="modal" hidden>
+  <div class="modal-card wide" role="dialog" aria-modal="true" aria-labelledby="srcTitle">
+    <div class="modal-head">
+      <h3 id="srcTitle">受信ソース</h3>
+      <button class="icon-btn" type="button" data-close aria-label="閉じる">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="src-lead">音声の取り込み元を選びます。デモ以外は、この端末につないだ機器の実音声を端末内で処理します。</p>
+      <div class="src-options" role="radiogroup" aria-label="受信ソース">
+        <button class="src-opt" type="button" data-source="demo" role="radio" aria-checked="true">
+          <span class="src-ico" aria-hidden="true">◈</span>
+          <span class="src-txt"><strong>デモ表示</strong><em>架空のデータでUIと周波数リストを確認</em></span>
+          <span class="src-state" data-state="demo">使用中</span>
+        </button>
+        <button class="src-opt" type="button" data-source="sdr" role="radio" aria-checked="false">
+          <span class="src-ico" aria-hidden="true">◉</span>
+          <span class="src-txt"><strong>Mac RTL-SDR</strong><em>RTL-SDRドングル → ローカルWebSocket（ws://127.0.0.1:8765）</em></span>
+          <span class="src-state" data-state="sdr">未接続</span>
+        </button>
+        <button class="src-opt" type="button" data-source="ext" role="radio" aria-checked="false">
+          <span class="src-ico" aria-hidden="true">◎</span>
+          <span class="src-txt"><strong>外部受信機（UV-K5 等）</strong><em>マイク／ライン入力から音声を取り込む</em></span>
+          <span class="src-state" data-state="ext">停止</span>
+        </button>
+      </div>
+
+      <div id="sdrPanel" class="src-panel" hidden>
+        <div class="src-panel-head">Mac RTL-SDR 接続</div>
+        <div class="conn-row">
+          <label class="conn-label" for="wsUrl">URL</label>
+          <input id="wsUrl" class="freq-input ws-url" type="text" value="ws://127.0.0.1:8765" spellcheck="false" autocomplete="off" autocapitalize="off" aria-label="WebSocket URL">
+          <button id="wsConnectBtn" class="btn primary small" type="button">接続</button>
+          <button id="wsDisconnectBtn" class="btn ghost small" type="button">切断</button>
+          <button id="wsGuideBtn" class="btn ghost small" type="button">接続ガイド</button>
+        </div>
+        <dl class="conn-grid">
+          <div><dt>状態</dt><dd id="wsStateVal">未接続</dd></div>
+          <div><dt>デバイス</dt><dd id="wsDeviceVal">—</dd></div>
+          <div><dt>同調</dt><dd id="wsTuneVal">—</dd></div>
+          <div><dt>FFT 更新</dt><dd id="wsFftVal">—</dd></div>
+          <div><dt>音声</dt><dd id="wsPcmVal">—</dd></div>
+          <div><dt>最終受信</dt><dd id="wsLastVal">—</dd></div>
+        </dl>
+        <p class="src-note">Mac 側で <code>mac-sdr-bridge/start_airscope_sdr.sh</code> を実行すると、このURLで待ち受けます。周波数・AM/FM・スケルチをAirScopeから送って同調を切り替えます。</p>
+      </div>
+
+      <div id="extPanel" class="src-panel" hidden>
+        <div class="src-panel-head">外部受信機（マイク／ライン入力）</div>
+        <div class="conn-row">
+          <label class="conn-label" for="extDevice">入力</label>
+          <select id="extDevice" class="select ext-select" aria-label="音声入力デバイス"><option value="">既定の入力</option></select>
+          <button id="extRefreshBtn" class="btn ghost small" type="button">再読込</button>
+          <button id="extStartBtn" class="btn primary small" type="button">入力を開始</button>
+          <button id="extStopBtn" class="btn ghost small" type="button">停止</button>
+        </div>
+        <dl class="conn-grid">
+          <div><dt>状態</dt><dd id="extStateVal">停止</dd></div>
+          <div><dt>入力レベル</dt><dd id="extLevelVal">—</dd></div>
+          <div><dt>サンプルレート</dt><dd id="extRateVal">—</dd></div>
+          <div><dt>録音</dt><dd id="extRecVal">—</dd></div>
+        </dl>
+        <div class="mon-row">
+          <label class="switch"><input type="checkbox" id="extMonToggle"><span class="track" aria-hidden="true"></span></label>
+          <span class="mon-text">モニタリング（スピーカーへ出力）</span>
+          <span class="mon-hint">イヤホン推奨</span>
+        </div>
+        <p id="extHowl" class="src-warn" hidden>ハウリング注意：スピーカー出力中にマイクが同じ音を拾うと発振することがあります。イヤホンを使うか、モニタリングをOFFにしてください。</p>
+        <p class="src-note">UV-K5 のイヤホン端子と Mac をオーディオケーブル（またはUSBオーディオ）でつなぎ、本体のダイヤルで周波数を合わせます。AirScope はその音声を取り込むだけで、UV-K5 を遠隔操作はしません。録音は「録音」ボタンで開始し、履歴から再生・保存できます。</p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <span class="hint">デモ以外はすべて端末内で処理し、外部送信しません</span>
+      <button class="btn primary" type="button" data-close>閉じる</button>
+    </div>
+  </div>
+</div>
+
+<div id="sdrGuideModal" class="modal" hidden>
+  <div class="modal-card wide" role="dialog" aria-modal="true" aria-labelledby="sdrGuideTitle">
+    <div class="modal-head">
+      <h3 id="sdrGuideTitle">Mac RTL-SDR 接続ガイド</h3>
+      <button class="icon-btn" type="button" data-close aria-label="閉じる">✕</button>
+    </div>
+    <div class="modal-body">
+      <ol class="guide-steps">
+        <li>RTL-SDR ドングル（RTL-SDR Blog V4 など）を Mac の USB に挿します。</li>
+        <li>ターミナルで下のセットアップを実行します（初回のみ）。</li>
+        <li><code>start_airscope_sdr.sh</code> を実行し、<code>ws://127.0.0.1:8765</code> で待ち受けます。</li>
+        <li>AirScope の「受信ソース」→「Mac RTL-SDR」→「接続」でつながります。</li>
+      </ol>
+      <div class="code-block">
+        <pre id="cmdSetup">brew install librtlsdr
+cd mac-sdr-bridge
+python3 -m venv .venv &amp;&amp; . .venv/bin/activate
+pip install websockets numpy pyrtlsdr
+./start_airscope_sdr.sh</pre>
+        <button class="btn ghost small" type="button" data-copy="cmdSetup">コピー</button>
+      </div>
+      <div class="code-block">
+        <pre id="cmdTest"># ドングルなしで接続テスト（合成信号）
+python3 bridge.py --selftest</pre>
+        <button class="btn ghost small" type="button" data-copy="cmdTest">コピー</button>
+      </div>
+      <div class="notice subtle">
+        <strong>受信できるもの／できないもの</strong>
+        AM（エアバンド 118–137MHz）と FM（鉄道・私鉄 150/352MHz帯など）のアナログ音声です。TDMA・DMR・NXDN などのデジタル変調や暗号化された業務無線は復調できません（音声にはなりません）。受信のみで送信はしません。
+      </div>
+      <div class="notice subtle">
+        電波法にもとづき、傍受した通信の内容を他人に知らせたり、自分のために使用したりすることはできません。受信した音声は個人の趣味の範囲で扱ってください。
+      </div>
+    </div>
+    <div class="modal-foot">
+      <a id="repoLink" class="btn ghost" href="https://github.com/yokomizomasaharu-sketch/airscope/tree/main/mac-sdr-bridge" target="_blank" rel="noopener noreferrer">GitHubのスクリプト</a>
+      <button class="btn primary" type="button" data-close>閉じる</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-<script src="app.js?v=13" defer></script>
+<script src="app.js?v=15" defer></script>
 </body>
 </html>
