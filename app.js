@@ -91,6 +91,7 @@
       sync: seed.sync,
       slots: makeSlots(seed.status, seed.callId || 0, seed.callSlot),
       callTimer: seed.callTimer || 0,
+      startedAt: Date.now() - (talking ? 14000 : 0),
       callId: seed.callId || 0,
       rescan: 20,
       baseSig: talking ? -38.2 : seed.status === 'sync' ? -51.6 : seed.status === 'judging' ? -78.4 : -96.5,
