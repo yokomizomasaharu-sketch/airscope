@@ -2800,7 +2800,7 @@
 
     // テスト・デバッグ用の読み取りAPI
     window.AirScope = {
-      version: 'v15',
+      version: 'v16',
       getState: () => ({
         source: state.source, preset: state.preset, tuned: state.tuned, rx: state.rx,
         latMuted: state.latMuted, latMute: state.latMute,
