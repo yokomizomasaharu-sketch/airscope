@@ -127,11 +127,10 @@ h2,h3{margin:0}
 .icon-btn{
   display:inline-flex;align-items:center;justify-content:center;
   width:27px;height:27px;
-  background:transprant;
   background:transparent;
-  border:1px solid transparent;
-  border-radius:6px;
+  border:0;
   color:#9aa9bc;
+  padding:0;
 }
 .icon-btn:hover{background:#16212d;color:#dbe6f3}
 

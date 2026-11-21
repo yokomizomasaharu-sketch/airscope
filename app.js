@@ -237,10 +237,10 @@
   /* ── モニター描画 ─────────────────────────────────────── */
   function stdLabel(st) {
     if (state.stdMode !== 'auto') return `${state.stdMode}（強制）`;
-    return `${st ? st.std : 'STD-T79'}（自動判定）`;
+    return `STD-${st ? st.std : 'T79'}（自動判定）`;
   }
   function codecLabel(st) {
-    const mode = state.stdMode !== 'auto' ? state.stdMode : (st ? st.std : 'STD-T79');
+    const mode = state.stdMode !== 'auto' ? state.stdMode : `STD-${st ? st.std : 'T79'}`;
     return CODECS[mode] || 'AMBE+ 4000';
   }
 
