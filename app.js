@@ -645,8 +645,8 @@
       for (const s of visible) {
         const dx = x - fToX(s.freq);
         if (Math.abs(dx) > 70) continue;
-        let amp = s.status === 'talking' ? 0.72 : s.status === 'sync' ? 0.34 : s.status === 'judging' ? 0.26 : 0.10;
-        if (!state.rx) amp *= 0.18; else if (s.status === 'talking') amp += Math.sin(t * 2.4 + s.freq) * 0.06;
+        let amp = s.status === 'talking' ? 0.52 : s.status === 'sync' ? 0.27 : s.status === 'judging' ? 0.2 : 0.075;
+        if (!state.rx) amp *= 0.18; else if (s.status === 'talking') amp += Math.sin(t * 2.4 + s.freq) * 0.05;
         if (s.id === state.selectedId) amp *= 1.12;
         const sigma = s.status === 'talking' ? 7.5 : 5.2;
         v += amp * Math.exp(-(dx * dx) / (2 * sigma * sigma));
@@ -740,6 +740,7 @@
     for (let f = Math.ceil(lo / tickStep) * tickStep; f < hi; f += tickStep) {
       const x = fToX(f);
       if (x < 16 || x > CW - 16) continue;
+      if (Math.abs(x - cx) < 22) continue;   // 中心ラベルとの重なりを避ける
       ctx.fillRect(x - .5, plotBottom + 1, 1, 3);
       ctx.fillText(f.toFixed(1), x, plotBottom + 22);
     }
