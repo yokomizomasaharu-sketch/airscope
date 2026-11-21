@@ -70,7 +70,7 @@
     },
     {
       id: 'jr', group: '国内デモ', label: 'JR 鉄道無線（352MHz 帯）',
-      range: [330, 370], center: 352.58, span: 2.048, fs: '2.048 MS/s',
+      range: [330, 370], center: 352.58, span: 0.4, fs: '0.400 MS/s',
       mod: 'FM', stdMode: 'アナログFM', stepMode: '12.5', main: 352.5375,
       note: 'JR在来線 A/Bタイプ列車無線の基地局波（352.5MHz帯・8ch）を公開リストから並べたデモです。線区の割当は会社・線区ごとに異なります（車上側は336MHz帯、Cタイプは414〜415MHz帯）。実電波は受信していません。',
       src: '参照: 公開周波数リスト（JR A/Bタイプ 352MHz帯）',
@@ -1083,13 +1083,13 @@
     ctx.font = '9.5px ui-monospace, SFMono-Regular, Menlo, monospace';
     ctx.fillStyle = '#5f7085';
     ctx.textAlign = 'center';
-    const tickStep = state.span <= 2.5 ? 0.4 : state.span <= 6 ? 1 : 2;
+    const tickStep = state.span <= 0.5 ? 0.05 : state.span <= 1 ? 0.1 : state.span <= 2.5 ? 0.4 : state.span <= 6 ? 1 : 2;
     for (let f = Math.ceil(lo / tickStep) * tickStep; f < hi; f += tickStep) {
       const x = fToX(f);
       if (x < 16 || x > CW - 16) continue;
       if (Math.abs(x - cx) < 22) continue;   // 中心ラベルとの重なりを避ける
       ctx.fillRect(x - .5, plotBottom + 1, 1, 3);
-      ctx.fillText(f.toFixed(1), x, plotBottom + 22);
+      ctx.fillText(tickStep < 0.1 ? f.toFixed(2) : f.toFixed(1), x, plotBottom + 22);
     }
     // 中心ラベル
     if (cx > 26 && cx < CW - 26) {
